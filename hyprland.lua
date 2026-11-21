@@ -8,6 +8,10 @@
 ---- ENVIRONMENT VARIABLES ----
 -------------------------------
 
+-- Theming: let Qt apps (Dolphin etc.) read KDE settings via plasma-integration
+hl.env("QT_QPA_PLATFORMTHEME", "kde")
+hl.env("XDG_MENU_PREFIX", "plasma-")
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("PATH", os.getenv("HOME") .. "/.local/bin:" .. (os.getenv("PATH") or ""))
@@ -67,7 +71,7 @@ local menu          = "qs ipc call startmenu toggle"          -- Quickshell Laun
 local controlCenter = "qs ipc call controlcenter toggle"      -- Quickshell Control Center
 local search        = "/home/gopal/.config/rofi/launch find" -- rofi: apps / run / windows / files
 local exitMenu      = "wlogout -b 5 -c 8 -r 8"
-local lockScreen    = "hyprlock"                              -- Modern Blur Lockscreen
+local lockScreen    = os.getenv("HOME") .. "/.config/hypr/scripts/lock"  -- thumper + hyprlock + wind
 
 
 --------------------
@@ -106,8 +110,11 @@ hl.on("hyprland.start", function ()
     -- Wallpaper daemon (Colorful Modern Art Wallpaper)
     hl.exec_cmd("hyprpaper")
 
-    -- Quickshell modern blurry shell (~/.config/quickshell)
+    -- Quickshell Dune shell (~/.config/quickshell)
     hl.exec_cmd("qs")
+
+    -- Title card + horn once the shell is up
+    hl.exec_cmd("sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do sleep 0.5; qs ipc call intro play && exit; done'")
 
     -- Terminal on startup
     hl.exec_cmd(terminal)
@@ -115,20 +122,25 @@ end)
 
 
 -----------------------
----- LOOK AND FEEL ----
+---- LOOK AND FEEL ----  DUNE: Arrakis at dusk
 -----------------------
+-- Palette (also used by Quickshell, hyprlock, kitty, rofi, wlogout):
+--   night sky #161924   charcoal #1f1917   deep #0d0b0a
+--   spice     #d98a4e   sand     #a96033   dune  #56331d
+--   pale sand #eac5b2   ibad blue #8ec9ff (Fremen eyes, used sparingly)
 
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 10,
+        gaps_in  = 4,
+        gaps_out = 12,
 
-        border_size = 2,
+        border_size = 1,
 
-        -- Gradient border matching modern art wallpaper & quickshell theme
+        -- Thin "eclipse flare" border: pale light fading into spice and dusk.
+        -- The angle slowly rotates (borderangle loop below) like light moving over dunes.
         col = {
-            active_border   = { colors = { "rgba(c9beffee)", "rgba(ff7b00ee)", "rgba(4cc9f0ee)" }, angle = 45 },
-            inactive_border = "rgba(201f25aa)",
+            active_border   = { colors = { "rgba(eac5b2ee)", "rgba(d98a4ecc)", "rgba(56331d55)", "rgba(d98a4ecc)" }, angle = 30 },
+            inactive_border = "rgba(1f191766)",
         },
 
         resize_on_border = true,
@@ -137,38 +149,59 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 14,
+        -- Brutalist, near-square corners like Arrakeen architecture
+        rounding       = 3,
         rounding_power = 2,
 
-        -- Frosted glassy transparency
-        active_opacity   = 0.94,
-        inactive_opacity = 0.85,
+        active_opacity   = 0.95,
+        inactive_opacity = 0.86,
         dim_inactive     = true,
-        dim_strength     = 0.08,
+        dim_strength     = 0.12,
+        dim_special      = 0.45,
 
-        -- Deep diffused modern drop shadow
+        -- Long, low, warm shadow — like the sun setting behind a dune crest
         shadow = {
             enabled        = true,
-            range          = 22,
-            render_power   = 4,
-            offset         = { 0, 4 },
-            color          = "rgba(00000055)",
-            color_inactive = "rgba(00000025)",
+            range          = 34,
+            render_power   = 3,
+            offset         = { 0, 10 },
+            color          = "rgba(0a0604b0)",
+            color_inactive = "rgba(0a060450)",
         },
 
-        -- Creamy multi-pass Gaussian blur
+        -- Hazy sandstorm glass: warm, desaturated, gritty
         blur = {
             enabled           = true,
-            size              = 8,
+            size              = 9,
             passes            = 3,
-            vibrancy          = 0.25,
-            vibrancy_darkness = 0.10,
-            noise             = 0.015,
-            contrast          = 0.92,
-            brightness        = 0.88,
+            vibrancy          = 0.12,
+            vibrancy_darkness = 0.30,
+            noise             = 0.045,   -- sand grain
+            contrast          = 0.95,
+            brightness        = 0.78,
             new_optimizations = true,
             ignore_opacity    = true,
             xray              = false,
+            popups            = true,
+
+            -- Cursor stirs ripples through blurred glass (custom build feature): slow, heavy, like sand
+            water = {
+                strength = 14,
+                radius   = 28,
+                speed    = 0.45,
+                duration = 6,
+                damping  = 0.965,
+            },
+        },
+
+        -- Windows sway like a heavy tent canvas when dragged (custom build feature)
+        wobble = {
+            enabled   = true,
+            intensity = 0.10,
+            stiffness = 150,
+            damping   = 14,
+            mass      = 1.6,
+            mesh      = 12,
         },
     },
 
@@ -177,25 +210,26 @@ hl.config({
     },
 })
 
--- Fluid modern curves (quintic ease out, cubic, overshot springs)
-hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1} } })
-hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1} } })
-hl.curve("overshot",       { type = "bezier", points = { {0.05, 0.9},  {0.1, 1.05} } })
-hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1} } })
+-- Motion language: slow, heavy, deliberate. Things emerge from haze and settle like sand.
+hl.curve("sandSettle", { type = "bezier", points = { {0.16, 1},    {0.30, 1} } })   -- long ease-out
+hl.curve("duneRise",   { type = "bezier", points = { {0.22, 0.9},  {0.20, 1.02} } }) -- tiny overshoot
+hl.curve("haze",       { type = "bezier", points = { {0.45, 0},    {0.25, 1} } })    -- fade from haze
+hl.curve("wind",       { type = "bezier", points = { {0.55, 0},    {0.85, 0.35} } }) -- swept away
+hl.curve("linear",     { type = "bezier", points = { {0, 0},       {1, 1} } })
 
-hl.animation({ leaf = "global",        enabled = true, speed = 10,  bezier = "easeOutQuint" })
-hl.animation({ leaf = "border",        enabled = true, speed = 5,   bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows",       enabled = true, speed = 4.5, bezier = "overshot" })
-hl.animation({ leaf = "windowsIn",     enabled = true, speed = 4.5, bezier = "overshot", style = "popin 85%" })
-hl.animation({ leaf = "windowsOut",    enabled = true, speed = 3,   bezier = "easeOutQuint", style = "popin 85%" })
-hl.animation({ leaf = "windowsMove",   enabled = true, speed = 4.5, bezier = "overshot" })
-hl.animation({ leaf = "fade",          enabled = true, speed = 3,   bezier = "easeInOutCubic" })
-hl.animation({ leaf = "fadeIn",        enabled = true, speed = 3,   bezier = "easeOutQuint" })
-hl.animation({ leaf = "fadeOut",       enabled = true, speed = 2,   bezier = "linear" })
-hl.animation({ leaf = "layers",        enabled = true, speed = 4,   bezier = "overshot", style = "slide" })
-hl.animation({ leaf = "layersIn",      enabled = true, speed = 4,   bezier = "overshot", style = "fade" })
-hl.animation({ leaf = "layersOut",     enabled = true, speed = 2.5, bezier = "easeOutQuint", style = "fade" })
-hl.animation({ leaf = "workspaces",    enabled = true, speed = 4.5, bezier = "easeOutQuint", style = "slide" })
+hl.animation({ leaf = "global",        enabled = true, speed = 8,   bezier = "sandSettle" })
+hl.animation({ leaf = "border",        enabled = true, speed = 8,   bezier = "haze" })
+hl.animation({ leaf = "borderangle",   enabled = true, speed = 100, bezier = "linear", style = "loop" })
+hl.animation({ leaf = "windowsIn",     enabled = true, speed = 6,   bezier = "duneRise",   style = "popin 92%" })
+hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4,   bezier = "wind",       style = "slide right" })
+hl.animation({ leaf = "windowsMove",   enabled = true, speed = 6,   bezier = "sandSettle" })
+hl.animation({ leaf = "fadeIn",        enabled = true, speed = 6,   bezier = "haze" })
+hl.animation({ leaf = "fadeOut",       enabled = true, speed = 4,   bezier = "wind" })
+hl.animation({ leaf = "fadeDim",       enabled = true, speed = 8,   bezier = "haze" })
+hl.animation({ leaf = "layersIn",      enabled = true, speed = 5,   bezier = "sandSettle", style = "fade" })
+hl.animation({ leaf = "layersOut",     enabled = true, speed = 3,   bezier = "wind",       style = "fade" })
+hl.animation({ leaf = "workspaces",    enabled = true, speed = 7,   bezier = "sandSettle", style = "slidefade 18%" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 6, bezier = "sandSettle", style = "slidefadevert 25%" })
 
 hl.config({
     dwindle = {
@@ -209,7 +243,7 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
-        background_color        = 0x141318,
+        background_color        = 0x0d0b0a,
     },
     layers = {
         allow_new_top_layers_over_existing_fullscreen = true,
@@ -221,7 +255,7 @@ hl.config({
         kb_layout  = "us",
         kb_variant = "",
         kb_model   = "",
-        kb_options = "",
+        kb_options = "caps:hyper,shift:both_capslock",  -- Caps Lock = Hyper (MOD3); both Shifts = Caps Lock
         kb_rules   = "",
 
         follow_mouse = 1,
@@ -262,7 +296,6 @@ local mainMod = "SUPER"
 -- Core Application Binds
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
@@ -424,3 +457,166 @@ hl.window_rule({
     float = true,
     size  = "720 520",
 })
+
+
+---------------------------------------------------
+---- CARRIED OVER FROM OLD CONFIG (1hypr.tar.gz) ----
+---------------------------------------------------
+
+local scripts = os.getenv("HOME") .. "/.config/hypr/scripts"
+
+-- Window state
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({}))
+hl.bind(mainMod .. " + Y", hl.dsp.window.pin({}))
+
+-- Floating presets: float + resize + center (old SHIFT+V / B / N)
+local function float_preset(w, h)
+    return function()
+        hl.dispatch(hl.dsp.window.float({ action = "enable" }))
+        hl.dispatch(hl.dsp.window.resize({ x = w, y = h }))
+        hl.dispatch(hl.dsp.window.center({}))
+    end
+end
+hl.bind(mainMod .. " + SHIFT + V", float_preset(900, 500))
+hl.bind(mainMod .. " + SHIFT + B", float_preset(1200, 700))
+hl.bind(mainMod .. " + SHIFT + N", float_preset(1600, 900))
+
+-- Gaps: SUPER+G = no gaps, SUPER+SHIFT+G = compact gaps, SUPER+CTRL+G = default
+hl.bind(mainMod .. " + G",               function() hl.config({ general = { gaps_in = 0, gaps_out = 0 } }) end)
+hl.bind(mainMod .. " + SHIFT + G",       function() hl.config({ general = { gaps_in = 3, gaps_out = 5 } }) end)
+hl.bind(mainMod .. " + CTRL + G",        function() hl.config({ general = { gaps_in = 5, gaps_out = 10 } }) end)
+
+-- Layout switching + master-layout controls
+hl.bind(mainMod .. " + CTRL + D",         function() hl.config({ general = { layout = "dwindle" } }) end)
+hl.bind(mainMod .. " + CTRL + SHIFT + D", function() hl.config({ general = { layout = "master" } }) end)
+hl.bind(mainMod .. " + backslash",         hl.dsp.layout("orientationnext"))
+hl.bind(mainMod .. " + CTRL + backslash",  hl.dsp.layout("orientationprev"))
+hl.bind(mainMod .. " + SHIFT + backslash", hl.dsp.layout("mfact exact 0.5"))
+hl.bind(mainMod .. " + bracketright",      hl.dsp.layout("mfact +0.05"), { repeating = true })
+hl.bind(mainMod .. " + bracketleft",       hl.dsp.layout("mfact -0.05"), { repeating = true })
+hl.bind(mainMod .. " + SHIFT + bracketright", hl.dsp.layout("addmaster"))
+hl.bind(mainMod .. " + SHIFT + bracketleft",  hl.dsp.layout("removemaster"))
+
+-- Grouping (tabbed windows): SUPER+T toggle, SUPER+ALT+left/right switch tab
+hl.bind(mainMod .. " + T",          hl.dsp.group.toggle({}))
+hl.bind(mainMod .. " + ALT + left",  hl.dsp.group.prev({}))
+hl.bind(mainMod .. " + ALT + right", hl.dsp.group.next({}))
+
+-- Workspace navigation
+hl.bind(mainMod .. " + period", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind(mainMod .. " + comma",  hl.dsp.focus({ workspace = "m-1" }))
+hl.bind(mainMod .. " + TAB",    hl.dsp.focus({ workspace = "previous" }))
+hl.bind(mainMod .. " + CTRL + grave", hl.dsp.focus({ workspace = "empty" }))
+hl.bind("mouse:276", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind("mouse:275", hl.dsp.focus({ workspace = "m-1" }))
+
+-- Move window to prev/next workspace, or to a fresh empty one (follows the window)
+hl.bind(mainMod .. " + CTRL + bracketleft",  hl.dsp.window.move({ workspace = "-1" }))
+hl.bind(mainMod .. " + CTRL + bracketright", hl.dsp.window.move({ workspace = "+1" }))
+hl.bind(mainMod .. " + CTRL + period",       hl.dsp.window.move({ workspace = "empty" }))
+
+-- Keyboard resize: SUPER+CTRL+SHIFT+arrows/hjkl, plus a persistent resize mode (SUPER+CTRL+R, Esc to leave)
+local step = 30
+for key, d in pairs({
+    left = { -step, 0 }, right = { step, 0 }, up = { 0, -step }, down = { 0, step },
+    h = { -step, 0 },    l = { step, 0 },     k = { 0, -step },   j = { 0, step },
+}) do
+    hl.bind(mainMod .. " + CTRL + SHIFT + " .. key,
+        hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
+end
+
+hl.bind(mainMod .. " + CTRL + R", hl.dsp.submap("resize"))
+hl.define_submap("resize", "reset", function()
+    for key, d in pairs({
+        left = { -step, 0 }, right = { step, 0 }, up = { 0, -step }, down = { 0, step },
+        h = { -step, 0 },    l = { step, 0 },     k = { 0, -step },   j = { 0, step },
+    }) do
+        hl.bind(key, hl.dsp.window.resize({ x = d[1], y = d[2], relative = true }), { repeating = true })
+    end
+    hl.bind("escape", hl.dsp.submap("reset"))
+    hl.bind("Return", hl.dsp.submap("reset"))
+end)
+
+-- Screenshots (scripts/screenshot needs grim, slurp, wl-clipboard; satty/swappy for editing)
+hl.bind("Print",              hl.dsp.exec_cmd(scripts .. "/screenshot area"))
+hl.bind("SHIFT + Print",      hl.dsp.exec_cmd(scripts .. "/screenshot full"))
+hl.bind("CTRL + Print",       hl.dsp.exec_cmd(scripts .. "/screenshot edit"))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(scripts .. "/screenshot area"))
+
+-- Suspend; external-monitor (DDC) brightness on SUPER + brightness keys
+hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("systemctl suspend"))
+hl.bind(mainMod .. " + XF86MonBrightnessUp",   hl.dsp.exec_cmd("ddcutil setvcp 10 + 10"), { locked = true, repeating = true })
+hl.bind(mainMod .. " + XF86MonBrightnessDown", hl.dsp.exec_cmd("ddcutil setvcp 10 - 10"), { locked = true, repeating = true })
+
+-- Window rules from old config
+hl.window_rule({ name = "float-utils",
+    match = { class = "^(blueman-manager|CachyOSHello|zenity|org.kde.polkit-kde-authentication-agent-1|hyprpolkitagent|vlc)$" },
+    float = true })
+hl.window_rule({ name = "float-portals",
+    match = { class = "^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|xdg-desktop-portal-hyprland)$" },
+    float = true })
+hl.window_rule({ name = "float-file-dialogs",
+    match = { class = "^$", title = "^(Save File|Open File)$" }, float = true })
+hl.window_rule({ name = "pip-float",
+    match = { title = "^(Picture-in-Picture|Picture in picture)$" },
+    float = true, pin = true, no_dim = true })
+hl.window_rule({ name = "htop-float",
+    match = { class = "^htop-float$" }, float = true, center = true, size = "1200 800" })
+hl.window_rule({ name = "no-dim-media",
+    match = { class = "^(firefox|librewolf|zen|chromium|google-chrome|vlc|mpv|imv)$" }, no_dim = true })
+hl.window_rule({ name = "editor-opacity",
+    match = { class = "^(dev.zed.Zed|code)$" }, opacity = 0.92 })
+
+-- Idle: lock/dim/suspend (hypridle.conf), and fix slow app launches via env import
+hl.on("hyprland.start", function()
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX")
+    hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+    hl.exec_cmd("hypridle")
+end)
+
+
+-------------------------
+---- DUNE EXTRAS ----
+-------------------------
+-- ── HYPER LAYER (Caps Lock) ──────────────────────────────────────────────
+local hyper = "MOD3"
+local function hb(key, action) hl.bind(hyper .. " + " .. key, action) end
+
+-- Dune
+hb("W", hl.dsp.exec_cmd("qs ipc call sand toggle"))          -- drifting sand on/off
+hb("G", hl.dsp.exec_cmd("qs ipc call sand gust"))            -- summon a gust
+hb("I", hl.dsp.exec_cmd("qs ipc call intro play"))           -- replay title card
+hb("M", hl.dsp.exec_cmd(scripts .. "/sfx toggle"))           -- mute sound effects
+
+-- Fresh starts: terminal / launcher on a new empty workspace
+hb("RETURN", function()
+    hl.dispatch(hl.dsp.focus({ workspace = "empty" }))
+    hl.exec_cmd(terminal)
+end)
+hb("SPACE", function()
+    hl.dispatch(hl.dsp.focus({ workspace = "empty" }))
+    hl.exec_cmd(menu)
+end)
+
+-- Toggles
+hb("O", function()
+    hl.config({ animations = { enabled = false } })
+    hl.exec_cmd("notify-send -a Arrakis 'Animations off'")
+end)
+hb("P", function()
+    hl.config({ animations = { enabled = true } })
+    hl.exec_cmd("notify-send -a Arrakis 'Animations on'")
+end)
+hb("L", hl.dsp.exec_cmd("sh -c 'if pgrep -x hypridle >/dev/null; then pkill -x hypridle; notify-send -a Arrakis \"Auto-lock off\" \"Screen stays awake\"; else setsid hypridle >/dev/null 2>&1 & notify-send -a Arrakis \"Auto-lock on\"; fi'"))
+
+-- Windows & workspaces
+hb("T", hl.dsp.group.toggle({}))                              -- tab group
+hb("bracketleft",  hl.dsp.window.move({ workspace = "-1" }))  -- carry window to prev workspace
+hb("bracketright", hl.dsp.window.move({ workspace = "+1" }))  -- carry window to next workspace
+hb("backslash",    hl.dsp.window.move({ workspace = "empty" }))
+hb("up",   hl.dsp.workspace.move({ monitor = "u" }))          -- push workspace to monitor above
+hb("down", hl.dsp.workspace.move({ monitor = "d" }))          -- push workspace to laptop below
+hb("TAB",  hl.dsp.focus({ monitor = "+1" }))                  -- jump between monitors
+
+-- Intro and sand layers: no blur, no layer animation (they animate themselves)
+hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sandstorm)$" }, no_anim = true })

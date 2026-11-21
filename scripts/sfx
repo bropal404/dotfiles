@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Play a Dune sound effect:  sfx horn|thumper|wind|notify|shift|low
+# Mute all effects:          touch ~/.cache/dune-sfx-off   (or: sfx toggle)
+off="$HOME/.cache/dune-sfx-off"
+if [[ "$1" == toggle ]]; then
+    if [[ -e $off ]]; then rm -f "$off"; notify-send -a Arrakis "Sound effects on"
+    else touch "$off"; notify-send -a Arrakis "Sound effects muted"; fi
+    exit 0
+fi
+[[ -e $off ]] && exit 0
+f="$HOME/.config/hypr/sounds/$1.wav"
+[[ -f $f ]] || exit 1
+exec pw-play --volume "${2:-0.7}" "$f" >/dev/null 2>&1

@@ -1,3 +1,57 @@
+# DUNE — Arrakis at dusk
+
+A Hyprland + Quickshell desktop themed after the film: thin ultra-wide tracked type, near-square
+shapes, dusk-navy and spice-sand palette, the "eclipse flare" motif, slow heavy motion, and
+procedurally synthesised sound effects.
+
+## Palette
+| role | hex | |
+|---|---|---|
+| night sky | `#161924` | bar ends, intro |
+| charcoal / deep | `#1a1513` / `#0d0b0a` | surfaces |
+| spice | `#d98a4e` | accent, selection, active things |
+| sand | `#a96033` | secondary |
+| pale sand | `#eac5b2` | text |
+| flare | `#fff4ec` | the eclipse point, focus |
+| eyes of Ibad | `#8ec9ff` | rare highlight (VPN, links, caps lock) |
+
+Fonts (OFL, in `~/.local/share/fonts/dune`): **Lexend Peta** (titles, clock), **Lexend** (body), Lexend Zetta, Michroma.
+
+## Pieces
+- `hyprland.lua` — thin rotating "flare" border, 3px corners, warm long shadows, gritty sand-haze blur,
+  cursor ripples through glass (`blur.water`) and heavy wobble when dragging (`decoration.wobble`);
+  slow "sandSettle / duneRise / haze / wind" animation curves.
+- `hyprlock.conf` — cinematic title card: letterbox bars, huge thin clock, eclipse flare, *The sleeper must awaken*.
+- `hypridle.conf` — dim 2.5 min → lock 5 → screen off 5.5 → suspend 15.
+- `~/.config/quickshell/` — Dune bar (eclipse sigil, drifting workspace marker, centred tracked clock),
+  `Eclipse.qml` motif, `Sandstorm.qml` (drifting sand behind windows, random gusts),
+  `DuneIntro.qml` (login title card), `Sfx.qml`; colours in `colors.json`.
+- `sounds/gen.py` — synthesises `horn` (login), `thumper` (lock), `wind` (unlock), `notify`,
+  `shift` (screenshot), `low` (critical / low battery). Re-run to regenerate.
+- `scripts/lock` (thumper → hyprlock → wind), `scripts/sfx`, `scripts/screenshot`.
+- kitty `dune-theme.conf`, wlogout (custom line icons), wofi, KDE/GTK colour scheme `Dune`.
+
+## Dune keys
+Caps Lock is **Hyper** (`caps:hyper`, Mod3). Press both Shifts for real Caps Lock.
+
+| keys | action |
+|---|---|
+| `Hyper+W` / `G` | toggle drifting sand / summon a gust |
+| `Hyper+I` | replay the title card |
+| `Hyper+M` | mute / unmute sound effects |
+| `Hyper+O` / `P` | animations off / on |
+| `Hyper+L` | toggle auto-lock (hypridle) |
+| `Hyper+Enter` / `Space` | terminal / launcher on a fresh workspace |
+| `Hyper+T` | tab group |
+| `Hyper+[` / `]` / `\` | carry window to prev / next / empty workspace |
+| `Hyper+↑` / `↓` | push workspace to monitor above / laptop below |
+| `Hyper+Tab` | jump between monitors |
+| `Super+L` | lock (with thumper) |
+
+---
+
+# (previous README)
+
 # Hypr-Blur: Modern Frosted Glass Shell with Quickshell
 
 A modern, minimal, aesthetic blurry Hyprland desktop environment featuring dynamic multi-pass Gaussian blur, Material You palette theming, custom Quickshell bottom bar, full Control Center (Wi-Fi, Bluetooth, Audio, Brightness, VPN), floating notification agent, 4K colorful modern art wallpaper, and a frosted glass lockscreen.

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Usage: screenshot area|full|edit
+# Needs: grim slurp wl-clipboard (+ satty or swappy for "edit")
+dir="$HOME/Pictures/Screenshots/$(date +%F)"
+mkdir -p "$dir"
+file="$dir/$(date +%H-%M-%S).png"
+
+case "$1" in
+  full)  grim "$file" ;;
+  edit)
+    region="$(slurp)" || exit 0
+    if command -v satty >/dev/null; then
+      grim -g "$region" - | satty --filename - --output-filename "$file" --copy-command wl-copy
+    else
+      grim -g "$region" - | swappy -f - -o "$file"
+    fi
+    exit 0 ;;
+  *)     region="$(slurp)" || exit 0; grim -g "$region" "$file" ;;
+esac
+
+wl-copy -t image/png < "$file"
+"$HOME/.config/hypr/scripts/sfx" shift &
+notify-send -a Arrakis -i "$file" "Screenshot saved" "$file (copied to clipboard)"

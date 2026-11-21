@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Lock with ceremony: the thumper calls, hyprlock appears; the wind greets you on unlock.
+pidof hyprlock >/dev/null && exit 0
+sfx="$HOME/.config/hypr/scripts/sfx"
+"$sfx" thumper 0.8 &
+hyprlock
+"$sfx" wind 0.6 &
