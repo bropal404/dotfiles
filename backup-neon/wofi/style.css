@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════════
+   RETRO CRT APPLICATION LAUNCHER (WOFI)
+   ═══════════════════════════════════════════════════════════════ */
+
+* {
+    font-family: "VT323", "Press Start 2P", "JetBrainsMono Nerd Font", monospace;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+window {
+    margin: 0px;
+    background: rgba(18, 14, 28, 0.95);
+    border: 3px solid #00f3ff;
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.5), inset 0 0 15px rgba(255, 42, 133, 0.2);
+}
+
+#input {
+    margin: 16px;
+    padding: 10px 16px;
+    border: 2px solid #ff2a85;
+    border-radius: 4px;
+    color: #05ffa1;
+    background-color: rgba(30, 22, 50, 0.9);
+    font-size: 22px;
+    box-shadow: 0 0 10px rgba(255, 42, 133, 0.4);
+}
+
+#input:focus {
+    border-color: #05ffa1;
+    box-shadow: 0 0 14px #05ffa1;
+}
+
+#inner-box {
+    margin: 10px 16px 16px 16px;
+    background-color: transparent;
+}
+
+#outer-box {
+    margin: 0px;
+    background-color: transparent;
+}
+
+#scroll {
+    margin: 0px;
+    border: none;
+}
+
+#text {
+    margin: 5px;
+    border: none;
+    color: #f1ebf9;
+}
+
+#entry {
+    padding: 8px 12px;
+    margin: 3px 0px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background-color: rgba(28, 22, 44, 0.6);
+    transition: all 0.15s ease-in-out;
+}
+
+#entry:hover {
+    background-color: rgba(0, 243, 255, 0.2);
+    border-color: #00f3ff;
+}
+
+#entry:selected {
+    background-color: #ff2a85;
+    border-color: #ffe600;
+    box-shadow: 0 0 12px #ff2a85;
+}
+
+#entry:selected #text {
+    color: #120e1c;
+    font-weight: 900;
+}
+
+#entry:selected #img {
+    filter: drop-shadow(0 0 4px #ffe600);
+}

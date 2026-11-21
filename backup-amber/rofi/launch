@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Retro launcher: rofi if installed, otherwise wofi.
+#   launch apps   -> app launcher
+#   launch find   -> apps / run / windows / files (Tab switches)
+mode="${1:-apps}"
+if command -v rofi >/dev/null 2>&1; then
+    case "$mode" in
+        find) exec rofi -show drun -modes "drun,run,window,filebrowser" ;;
+        *)    exec rofi -show drun ;;
+    esac
+else
+    exec wofi --show drun
+fi

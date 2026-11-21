@@ -1,0 +1,216 @@
+/* ═══════════════════════════════════════════════════════════════
+   RETRO SYNTHWAVE / ARCADE WAYBAR STYLESHEET
+   ═══════════════════════════════════════════════════════════════ */
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "VT323", "Press Start 2P", "JetBrainsMono Nerd Font", monospace;
+    font-size: 16px;
+    font-weight: bold;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+window#waybar {
+    background: rgba(18, 14, 28, 0.90);
+    border: 2px solid #ff2a85;
+    border-radius: 4px;
+    color: #f1ebf9;
+    box-shadow: 0 0 12px rgba(255, 42, 133, 0.4), inset 0 0 8px rgba(0, 243, 255, 0.15);
+}
+
+/* Module Base Styling */
+#custom-retro_logo,
+#custom-retro_search,
+#workspaces,
+#window,
+#cpu,
+#memory,
+#pulseaudio,
+#battery,
+#clock,
+#custom-retro_widget,
+#custom-power {
+    background: rgba(28, 22, 44, 0.85);
+    border: 1px solid #3d3455;
+    border-radius: 2px;
+    padding: 2px 10px;
+    margin: 3px 2px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Retro Logo */
+#custom-retro_logo {
+    color: #ff2a85;
+    border-color: #ff2a85;
+    font-size: 18px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 6px rgba(255, 42, 133, 0.35);
+}
+
+#custom-retro_logo:hover {
+    background: #ff2a85;
+    color: #120e1c;
+    box-shadow: 0 0 14px #ff2a85;
+}
+
+/* Search Button */
+#custom-retro_search {
+    color: #00f3ff;
+    border-color: #00f3ff;
+}
+
+#custom-retro_search:hover {
+    background: #00f3ff;
+    color: #120e1c;
+    box-shadow: 0 0 14px #00f3ff;
+}
+
+/* Workspaces */
+#workspaces {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+#workspaces button {
+    background: rgba(28, 22, 44, 0.7);
+    color: #8c82a2;
+    border: 1px solid #342b4a;
+    border-radius: 2px;
+    padding: 2px 8px;
+    margin: 3px 2px;
+    font-size: 15px;
+}
+
+#workspaces button:hover {
+    background: rgba(0, 243, 255, 0.2);
+    color: #00f3ff;
+    border-color: #00f3ff;
+    box-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
+}
+
+#workspaces button.active {
+    background: rgba(5, 255, 161, 0.2);
+    color: #05ffa1;
+    border: 1px solid #05ffa1;
+    box-shadow: 0 0 10px rgba(5, 255, 161, 0.5);
+    text-shadow: 0 0 4px #05ffa1;
+}
+
+#workspaces button.urgent {
+    background: rgba(255, 42, 133, 0.3);
+    color: #ff2a85;
+    border: 1px solid #ff2a85;
+    box-shadow: 0 0 12px #ff2a85;
+}
+
+/* Active Window */
+#window {
+    color: #ffe600;
+    border-color: #5a4f32;
+    background: rgba(26, 22, 16, 0.6);
+    letter-spacing: 0.5px;
+}
+
+/* Telemetry & Stats */
+#cpu {
+    color: #00f3ff;
+    border-color: #00a0a8;
+}
+
+#cpu:hover {
+    box-shadow: 0 0 8px #00f3ff;
+}
+
+#memory {
+    color: #b362ff;
+    border-color: #7b38bf;
+}
+
+#memory:hover {
+    box-shadow: 0 0 8px #b362ff;
+}
+
+#pulseaudio {
+    color: #05ffa1;
+    border-color: #039f64;
+}
+
+#pulseaudio.muted {
+    color: #ff4757;
+    border-color: #ff4757;
+}
+
+#battery {
+    color: #ff9e3b;
+    border-color: #aa6520;
+}
+
+#battery.charging, #battery.plugged {
+    color: #05ffa1;
+    border-color: #05ffa1;
+    box-shadow: 0 0 6px #05ffa1;
+}
+
+#battery.warning:not(.charging) {
+    color: #ffe600;
+    border-color: #ffe600;
+}
+
+#battery.critical:not(.charging) {
+    color: #ff2a85;
+    border-color: #ff2a85;
+    animation: blink 0.8s infinite alternate;
+}
+
+@keyframes blink {
+    to {
+        background-color: #ff2a85;
+        color: #120e1c;
+    }
+}
+
+/* Retro Clock */
+#clock {
+    color: #00f3ff;
+    border-color: #00f3ff;
+    letter-spacing: 1px;
+    font-size: 17px;
+    text-shadow: 0 0 4px rgba(0, 243, 255, 0.5);
+}
+
+#clock:hover {
+    background: #00f3ff;
+    color: #120e1c;
+    box-shadow: 0 0 12px #00f3ff;
+}
+
+/* Retro Telemetry HUD Widget */
+#custom-retro_widget {
+    color: #ffe600;
+    border-color: #ffe600;
+    box-shadow: 0 0 6px rgba(255, 230, 0, 0.35);
+}
+
+#custom-retro_widget:hover {
+    background: #ffe600;
+    color: #120e1c;
+    box-shadow: 0 0 14px #ffe600;
+}
+
+/* Exit / Power */
+#custom-power {
+    color: #ff2a85;
+    border-color: #ff2a85;
+    margin-right: 4px;
+    box-shadow: 0 0 6px rgba(255, 42, 133, 0.35);
+}
+
+#custom-power:hover {
+    background: #ff2a85;
+    color: #120e1c;
+    box-shadow: 0 0 14px #ff2a85;
+}

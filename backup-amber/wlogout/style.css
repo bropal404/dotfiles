@@ -1,0 +1,44 @@
+/* ───────────────────────────────────────────────────────────────
+   WARM RETRO POWER MENU (WLOGOUT) — row of bevelled keys
+   ─────────────────────────────────────────────────────────────── */
+
+* {
+    background-image: none;
+    box-shadow: none;
+    text-shadow: none;
+    font-family: "VT323", "JetBrainsMono Nerd Font", monospace;
+    font-size: 30px;
+}
+
+window {
+    background-color: rgba(20, 17, 14, 0.94);
+}
+
+button {
+    color: #e6d5b0;
+    background-color: #262019;
+    border-radius: 0;
+    margin: 260px 10px;
+    padding: 0 10px;
+    border-top: 3px solid #4a3f31;
+    border-left: 3px solid #4a3f31;
+    border-bottom: 3px solid #0e0c0a;
+    border-right: 3px solid #0e0c0a;
+    outline: none;
+}
+
+/* hover / focus = key pushed in + inverse video */
+button:focus, button:hover, button:active {
+    color: #1b1814;
+    border-top-color: #0e0c0a;
+    border-left-color: #0e0c0a;
+    border-bottom-color: #4a3f31;
+    border-right-color: #4a3f31;
+}
+
+#lock:focus,     #lock:hover     { background-color: #e08a2e; }
+#logout:focus,   #logout:hover   { background-color: #d9b24a; }
+#suspend:focus,  #suspend:hover  { background-color: #8f9a4f; }
+#reboot:focus,   #reboot:hover   { background-color: #6f9488; }
+#shutdown:focus, #shutdown:hover { background-color: #c0552b; }
+#shutdown { color: #c0552b; }

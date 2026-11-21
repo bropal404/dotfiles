@@ -1,0 +1,147 @@
+/* ───────────────────────────────────────────────────────────────
+   WARM RETRO WAYBAR
+   amber phosphor · cream · rust · olive on warm charcoal
+   flat colours, bevelled buttons, inverse-video highlights, no glow
+   ─────────────────────────────────────────────────────────────── */
+
+@define-color bg       #1b1814;
+@define-color surface  #262019;
+@define-color edge_hi  #4a3f31;
+@define-color edge_lo  #0e0c0a;
+@define-color fg       #e6d5b0;
+@define-color dim      #9a8a6e;
+@define-color amber    #e08a2e;
+@define-color mustard  #d9b24a;
+@define-color rust     #c0552b;
+@define-color olive    #8f9a4f;
+@define-color teal     #6f9488;
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "VT323", "JetBrainsMono Nerd Font", monospace;
+    font-size: 19px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+window#waybar {
+    background: @bg;
+    color: @fg;
+    border: 2px solid @edge_hi;
+    border-bottom-color: @amber;
+}
+
+tooltip {
+    background: @surface;
+    border: 2px solid @amber;
+}
+tooltip label { color: @fg; }
+
+/* ── raised (bevelled) buttons ─────────────────────────────── */
+#custom-retro_logo,
+#custom-retro_search,
+#custom-power {
+    background: @surface;
+    color: @fg;
+    padding: 0 10px;
+    margin: 4px 3px;
+    border-top: 2px solid @edge_hi;
+    border-left: 2px solid @edge_hi;
+    border-bottom: 2px solid @edge_lo;
+    border-right: 2px solid @edge_lo;
+}
+
+#custom-retro_logo:hover,
+#custom-retro_search:hover {
+    background: @amber;
+    color: @bg;
+}
+
+/* pressed look on hover for the power key */
+#custom-power { color: @rust; padding: 0 12px; }
+#custom-power:hover {
+    background: @rust;
+    color: @bg;
+    border-top-color: @edge_lo;
+    border-left-color: @edge_lo;
+    border-bottom-color: @edge_hi;
+    border-right-color: @edge_hi;
+}
+
+#custom-retro_logo { color: @amber; margin-left: 4px; }
+
+/* ── blinking block cursor ─────────────────────────────────── */
+@keyframes blink {
+    0%   { color: @amber; }
+    49%  { color: @amber; }
+    50%  { color: transparent; }
+    100% { color: transparent; }
+}
+#custom-cursor {
+    color: @amber;
+    padding: 0 8px 0 2px;
+    animation: blink 1.06s linear infinite;
+}
+
+/* ── workspaces: inverse video for the active one ──────────── */
+#workspaces { margin: 0 6px; }
+
+#workspaces button {
+    color: @dim;
+    background: transparent;
+    padding: 0 7px;
+    margin: 4px 1px;
+    box-shadow: none;
+    text-shadow: none;
+    transition: none;
+}
+#workspaces button:hover {
+    background: @surface;
+    color: @fg;
+    box-shadow: inset 0 -2px @dim;
+}
+#workspaces button.active {
+    background: @amber;
+    color: @bg;
+}
+#workspaces button.urgent {
+    background: @rust;
+    color: @fg;
+}
+
+/* ── window title ──────────────────────────────────────────── */
+#window { color: @fg; padding: 0 12px; }
+window#waybar.empty #window { background: transparent; }
+
+/* ── status readouts: plain text with dividers ─────────────── */
+#cpu, #memory, #pulseaudio, #battery, #clock {
+    padding: 0 12px;
+    margin: 6px 0;
+    border-left: 1px solid @edge_hi;
+}
+
+#cpu        { color: @mustard; }
+#memory     { color: @teal; }
+#pulseaudio { color: @olive; }
+#pulseaudio.muted { color: @dim; }
+#battery    { color: @fg; }
+#battery.charging, #battery.plugged { color: @olive; }
+#battery.warning:not(.charging)     { color: @mustard; }
+
+@keyframes alarm {
+    0%   { background: @rust; color: @bg; }
+    49%  { background: @rust; color: @bg; }
+    50%  { background: transparent; color: @rust; }
+    100% { background: transparent; color: @rust; }
+}
+#battery.critical:not(.charging) {
+    animation: alarm 1s linear infinite;
+}
+
+#clock {
+    color: @amber;
+    border-right: 1px solid @edge_hi;
+    margin-right: 6px;
+}

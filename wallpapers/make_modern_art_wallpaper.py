@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""
+Generates a 4K Colorful Modern Art Wallpaper and renders to PNG.
+Style: Contemporary Modernist Geometric Abstract (Bauhaus / Kandinsky / Minimalist Chromatic Flow)
+"""
+import os
+import subprocess
+import math
+
+W, H = 3840, 2160
+
+svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
+<defs>
+  <!-- Background radial gradient -->
+  <radialGradient id="bgGlow" cx="50%" cy="45%" r="75%">
+    <stop offset="0%" stop-color="#16152b" />
+    <stop offset="50%" stop-color="#0f0e1d" />
+    <stop offset="100%" stop-color="#07070e" />
+  </radialGradient>
+
+  <!-- Color Gradients -->
+  <linearGradient id="gradSunset" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#f72585" />
+    <stop offset="45%" stop-color="#7209b7" />
+    <stop offset="100%" stop-color="#4361ee" />
+  </linearGradient>
+
+  <linearGradient id="gradCoral" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff7b00" />
+    <stop offset="50%" stop-color="#ff0054" />
+    <stop offset="100%" stop-color="#9e0059" />
+  </linearGradient>
+
+  <linearGradient id="gradCyanMint" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#4cc9f0" />
+    <stop offset="60%" stop-color="#4895ef" />
+    <stop offset="100%" stop-color="#3f37c9" />
+  </linearGradient>
+
+  <linearGradient id="gradTealGreen" x1="0%" y1="100%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#06d6a0" />
+    <stop offset="70%" stop-color="#118ab2" />
+    <stop offset="100%" stop-color="#073b4c" />
+  </linearGradient>
+
+  <linearGradient id="gradGoldSun" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ffe600" />
+    <stop offset="60%" stop-color="#ff5400" />
+    <stop offset="100%" stop-color="#f72585" />
+  </linearGradient>
+
+  <linearGradient id="gradElectric" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#00f5d4" />
+    <stop offset="50%" stop-color="#7b2cbf" />
+    <stop offset="100%" stop-color="#ff007f" />
+  </linearGradient>
+
+  <radialGradient id="sphereSun" cx="35%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#fff066" />
+    <stop offset="40%" stop-color="#ff7b00" />
+    <stop offset="85%" stop-color="#d00000" />
+    <stop offset="100%" stop-color="#6a040f" />
+  </radialGradient>
+
+  <radialGradient id="sphereViolet" cx="30%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#b5e2fa" />
+    <stop offset="35%" stop-color="#64dfdf" />
+    <stop offset="75%" stop-color="#3a0ca3" />
+    <stop offset="100%" stop-color="#190933" />
+  </radialGradient>
+
+  <radialGradient id="ambientGlow1" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ff007f" stop-opacity="0.22" />
+    <stop offset="100%" stop-color="#ff007f" stop-opacity="0" />
+  </radialGradient>
+
+  <radialGradient id="ambientGlow2" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#4cc9f0" stop-opacity="0.25" />
+    <stop offset="100%" stop-color="#4cc9f0" stop-opacity="0" />
+  </radialGradient>
+
+  <!-- Soft modern drop shadow -->
+  <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="24" stdDeviation="36" flood-color="#000000" flood-opacity="0.55" />
+  </filter>
+
+  <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="60" result="blur" />
+    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+  </filter>
+</defs>
+
+<!-- Deep Canvas Base -->
+<rect width="{W}" height="{H}" fill="url(#bgGlow)" />
+
+<!-- Ambient Lighting Aura Behind Artwork -->
+<circle cx="1600" cy="1150" r="950" fill="url(#ambientGlow1)" />
+<circle cx="2500" cy="950" r="850" fill="url(#ambientGlow2)" />
+
+<!-- Background Grid / Alignment Lines (Subtle Architectural Accent) -->
+<g stroke="#ffffff" stroke-opacity="0.04" stroke-width="2">
+  <line x1="380" y1="0" x2="380" y2="{H}" />
+  <line x1="1140" y1="0" x2="1140" y2="{H}" />
+  <line x1="1920" y1="0" x2="1920" y2="{H}" />
+  <line x1="2700" y1="0" x2="2700" y2="{H}" />
+  <line x1="3460" y1="0" x2="3460" y2="{H}" />
+  <line x1="0" y1="540" x2="{W}" y2="540" />
+  <line x1="0" y1="1080" x2="{W}" y2="1080" />
+  <line x1="0" y1="1620" x2="{W}" y2="1620" />
+</g>
+
+<!-- Giant Diagonal Arch Ribbons (Modernist Bauhaus sweep) -->
+<g filter="url(#softShadow)">
+  <!-- Big sweep from left bottom towards center right -->
+  <path d="M -100 2200 C 600 2000, 1100 1600, 1500 1100 C 1900 600, 2400 400, 3100 350 L 3200 600 C 2500 650, 2050 900, 1700 1350 C 1350 1800, 850 2250, -100 2450 Z"
+        fill="url(#gradSunset)" opacity="0.92" />
+</g>
+
+<!-- Modern Art Dynamic Composition Center -->
+<g filter="url(#softShadow)">
+  <!-- Vibrant Coral-Magenta Curved Shield / Monolith -->
+  <path d="M 2150 480 C 2650 480, 2980 850, 2980 1350 C 2980 1850, 2580 2020, 2050 2020 C 1700 2020, 1620 1850, 1620 1520 C 1620 1000, 1750 480, 2150 480 Z"
+        fill="url(#gradCoral)" />
+
+  <!-- Bold Intersecting Turquoise-Cyan Disc -->
+  <circle cx="1520" cy="980" r="480" fill="url(#gradCyanMint)" />
+
+  <!-- Overlapping Geometric Semi-Circle in Deep Teal-Blue -->
+  <path d="M 1520 500 A 480 480 0 0 1 1520 1460 Z" fill="url(#gradTealGreen)" opacity="0.85" />
+</g>
+
+<!-- Radiant Glowing Sun Sphere -->
+<circle cx="2480" cy="740" r="280" fill="url(#sphereSun)" filter="url(#softShadow)" />
+
+<!-- Floating Indigo-Cyan Sphere with Soft Light -->
+<circle cx="1120" cy="1420" r="220" fill="url(#sphereViolet)" filter="url(#softShadow)" />
+
+<!-- Elegant Bauhaus Overlapping Arcs & Ring Motifs -->
+<g stroke="url(#gradGoldSun)" stroke-width="24" fill="none" stroke-linecap="round" filter="url(#softShadow)">
+  <path d="M 850 1100 A 620 620 0 0 1 2020 850" />
+  <circle cx="2480" cy="740" r="390" stroke-width="12" stroke="#ffffff" stroke-opacity="0.25" stroke-dasharray="8 18" />
+  <circle cx="2480" cy="740" r="460" stroke-width="4" stroke="#4cc9f0" stroke-opacity="0.4" />
+</g>
+
+<!-- Concentric Fine Geometry & Clean Modern Lines -->
+<g stroke="#ffffff" stroke-opacity="0.3" stroke-width="3" fill="none">
+  <circle cx="1520" cy="980" r="560" stroke-dasharray="16 16" />
+  <circle cx="1520" cy="980" r="640" stroke-opacity="0.15" />
+</g>
+
+<!-- Slanted Modern Bauhaus Accent Beams & Color Bars -->
+<g filter="url(#softShadow)">
+  <!-- Canary Yellow Crisp Angular Beam -->
+  <polygon points="1200,280 1840,280 1620,440 980,440" fill="#ffd166" />
+  
+  <!-- Electric Emerald Angular Accent -->
+  <polygon points="2680,1480 3260,1320 3320,1460 2740,1620" fill="#06d6a0" />
+
+  <!-- Lavender Violet Precision Polygon -->
+  <polygon points="860,780 1060,620 1140,700 940,860" fill="#b5179e" />
+
+  <!-- Tangerine Orange Floating Pill Shape -->
+  <rect x="2200" y="1620" width="480" height="88" rx="44" fill="url(#gradGoldSun)" transform="rotate(-18 2440 1664)" />
+
+  <!-- Cyan Pill Accent -->
+  <rect x="1350" y="1680" width="340" height="64" rx="32" fill="#4cc9f0" transform="rotate(24 1520 1712)" />
+</g>
+
+<!-- Kandinsky Style Scatter & Staccato Accents -->
+<g fill="#ffffff">
+  <circle cx="820" cy="520" r="14" opacity="0.9" />
+  <circle cx="890" cy="460" r="8" opacity="0.7" />
+  <circle cx="950" cy="540" r="20" fill="#ff0054" />
+  
+  <circle cx="2950" cy="620" r="16" fill="#00f5d4" />
+  <circle cx="3120" cy="740" r="28" fill="#ffd166" />
+  <circle cx="3040" cy="850" r="10" opacity="0.8" />
+  
+  <circle cx="1980" cy="1840" r="22" fill="#ffbe0b" />
+  <circle cx="2060" cy="1920" r="12" opacity="0.75" />
+  
+  <circle cx="1400" cy="380" r="16" fill="#f72585" />
+</g>
+
+<!-- Organic Fluid Wave Crest in Lower Left & Upper Right -->
+<path d="M 0 1780 C 450 1620, 780 1850, 1150 1820 C 1380 1800, 1550 1700, 1680 1580 C 1320 2050, 750 2200, 0 2160 Z"
+      fill="url(#gradSunset)" opacity="0.7" filter="url(#softShadow)" />
+
+<path d="M 2850 180 C 3150 120, 3500 240, 3840 160 L 3840 520 C 3480 620, 3100 480, 2850 360 Z"
+      fill="url(#gradCyanMint)" opacity="0.6" filter="url(#softShadow)" />
+
+<!-- Signature Modern Floating Minimalist Ring -->
+<circle cx="1880" cy="1320" r="160" fill="none" stroke="#ffffff" stroke-width="18" filter="url(#softShadow)" />
+<circle cx="1880" cy="1320" r="70" fill="#f72585" />
+
+</svg>"""
+
+out_svg = "/home/gopal/.config/hypr/wallpapers/modern_art.svg"
+out_png = "/home/gopal/.config/hypr/wallpapers/modern_art.png"
+
+with open(out_svg, "w") as f:
+    f.write(svg)
+print(f"Generated SVG: {out_svg}")
+
+print(f"Rendering 4K PNG to {out_png} via rsvg-convert...")
+subprocess.run(["rsvg-convert", "-w", "3840", "-h", "2160", "-o", out_png, out_svg], check=True)
+print("4K Modern Art Wallpaper render complete!")
