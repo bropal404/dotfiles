@@ -70,7 +70,7 @@ local fileManager   = "dolphin"
 local menu          = "qs ipc call startmenu toggle"          -- Quickshell Launcher
 local controlCenter = "qs ipc call controlcenter toggle"      -- Quickshell Control Center
 local search        = "/home/gopal/.config/rofi/launch find" -- rofi: apps / run / windows / files
-local exitMenu      = "wlogout -b 5 -c 8 -r 8"
+local exitMenu      = "qs ipc call power toggle"   -- hold-to-confirm power menu (PowerMenu.qml)
 local lockScreen    = os.getenv("HOME") .. "/.config/hypr/scripts/lock"  -- thumper + hyprlock + wind
 
 
@@ -545,6 +545,7 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(scripts .. "/screenshot area"
 
 -- Suspend; external-monitor (DDC) brightness on SUPER + brightness keys
 hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("systemctl suspend"))
+hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("systemctl suspend"))   -- instant sleep (hypridle locks first)
 hl.bind(mainMod .. " + XF86MonBrightnessUp",   hl.dsp.exec_cmd("ddcutil setvcp 10 + 10"), { locked = true, repeating = true })
 hl.bind(mainMod .. " + XF86MonBrightnessDown", hl.dsp.exec_cmd("ddcutil setvcp 10 - 10"), { locked = true, repeating = true })
 
