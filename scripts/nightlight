@@ -1,0 +1,8 @@
+#!/bin/sh
+# Toggle night light. hyprsunset's own schedule (hyprsunset.conf) keeps running underneath.
+cur=$(hyprctl hyprsunset temperature 2>/dev/null | tr -dc '0-9')
+if [ -n "$cur" ] && [ "$cur" -lt 6000 ]; then
+    hyprctl hyprsunset identity >/dev/null && notify-send -a Arrakis "Night light off"
+else
+    hyprctl hyprsunset temperature 3800 >/dev/null && notify-send -a Arrakis "Night light on" "3800K"
+fi

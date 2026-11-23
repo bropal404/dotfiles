@@ -1,0 +1,85 @@
+#!/bin/sh
+# Power mode for the desktop: automatic by default, with a manual override.
+#   powermode set auto|saver|performance — manual switch (quick-settings tile uses this)
+#   powermode get      — prints "<override> <effective>", e.g. "auto battery"
+#   powermode watch    — apply now, then re-apply whenever AC is plugged/unplugged (autostarted)
+#   powermode battery  — spinning border off (biggest saver: it forces a redraw every frame), backlight capped at 50%, blur + shadows off, windows opaque, sandstorm off (refresh rate untouched)
+#   powermode ac       — blur + shadows on, translucent windows, sandstorm on
+# VRR is set once in hyprland.lua (monitor rule); it cannot be flipped live in this build.
+# CPU/GPU/PCIe tuning is TLP's job (tlp/10-pavilion-8845hs.conf); this covers the compositor.
+# Manual "set" also flips the TLP profile (saver = power-saver, performance = performance, auto = by charger)
+# via a passwordless sudo rule (tlp/sudoers-powermode). Without that rule only the compositor part switches.
+
+BRSTATE="${XDG_RUNTIME_DIR:-/tmp}/powermode-brightness"
+BR_CAP=50      # % ceiling for the backlight on battery (never raises it if you're already lower)
+
+RT="${XDG_RUNTIME_DIR:-/tmp}"
+OVERRIDE="$RT/powermode-override"   # auto | saver | performance
+APPLIED="$RT/powermode-applied"     # battery | ac  (what the desktop is currently set to)
+
+online() { cat /sys/class/power_supply/AC*/online /sys/class/power_supply/ADP*/online 2>/dev/null | head -1; }
+
+override() { cat "$OVERRIDE" 2>/dev/null || echo auto; }
+
+# Which mode should be active right now?  saver -> battery, performance -> ac, auto -> follow the charger
+effective() {
+    case "$(override)" in
+        saver) echo battery ;;
+        performance) echo ac ;;
+        *) [ "$(online)" = "1" ] && echo ac || echo battery ;;
+    esac
+}
+
+# Apply the effective mode if it differs from what's applied (or always with "force")
+tlp_profile() {
+    command -v tlp >/dev/null 2>&1 || return 0
+    case "$1" in
+        saver) sudo -n /usr/bin/tlp power-saver ;;
+        performance) sudo -n /usr/bin/tlp performance ;;
+        *) sudo -n /usr/bin/tlp start ;;
+    esac >/dev/null 2>&1
+}
+
+sync() {
+    now=$(effective)
+    if [ "$1" = force ] || [ "$now" != "$(cat "$APPLIED" 2>/dev/null)" ]; then
+        "$now"; echo "$now" > "$APPLIED"; echo "$now"
+        return 0
+    fi
+    return 1
+}
+
+battery() {
+    cur=$(brightnessctl get); max=$(brightnessctl max)
+    if [ -n "$cur" ] && [ -n "$max" ] && [ $(( cur * 100 / max )) -gt $BR_CAP ]; then
+        [ -e "$BRSTATE" ] || echo "$cur" > "$BRSTATE"
+        brightnessctl set "$BR_CAP%" >/dev/null
+    fi
+    hyprctl eval 'hl.config({ decoration = { blur = { enabled = false }, shadow = { enabled = false }, active_opacity = 1.0, inactive_opacity = 1.0, dim_inactive = false } }); for _, r in ipairs(OPACITY_RULES or {}) do r:set_enabled(false) end; hl.animation({ leaf = "borderangle", enabled = false })' >/dev/null
+    qs ipc call sand disable >/dev/null 2>&1
+}
+
+ac() {
+    if [ -r "$BRSTATE" ]; then brightnessctl set "$(cat "$BRSTATE")" >/dev/null; rm -f "$BRSTATE"; fi
+    hyprctl eval 'hl.config({ decoration = { blur = { enabled = true }, shadow = { enabled = true }, active_opacity = 0.95, inactive_opacity = 0.86, dim_inactive = true } }); for _, r in ipairs(OPACITY_RULES or {}) do r:set_enabled(true) end; hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "linear", style = "loop" })' >/dev/null
+    qs ipc call sand enable >/dev/null 2>&1
+}
+
+case "$1" in
+    battery) battery ;;
+    ac) ac ;;
+    get) echo "$(override) $(effective)" ;;
+    set)
+        case "$2" in auto|saver|performance) ;; *) echo "usage: powermode set auto|saver|performance" >&2; exit 1 ;; esac
+        echo "$2" > "$OVERRIDE"
+        sync force >/dev/null
+        tlp_profile "$2"
+        notify-send -a Arrakis "Power mode: $2" "$([ "$2" = auto ] && echo "following charger ($(effective))" || echo "manual")" 2>/dev/null ;;
+    watch)
+        sleep 4                       # let Hyprland + Quickshell finish starting
+        sync force >/dev/null
+        udevadm monitor --udev --subsystem-match=power_supply 2>/dev/null | while read -r _; do
+            sync >/dev/null && [ "$(override)" = auto ] && notify-send -a Arrakis "Power: $(cat "$APPLIED")" 2>/dev/null
+        done ;;
+    *) sync force ;;
+esac

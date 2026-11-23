@@ -28,6 +28,7 @@ hl.monitor({
     mode     = "preferred",
     position = "auto",
     scale    = "auto",
+    vrr      = 1,            -- adaptive sync on the 120Hz panel (2 = fullscreen only, if you see flicker)
 })
 
 -- External monitor positioned on TOP of laptop screen
@@ -116,8 +117,6 @@ hl.on("hyprland.start", function ()
     -- Title card + horn once the shell is up
     hl.exec_cmd("sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do sleep 0.5; qs ipc call intro play && exit; done'")
 
-    -- Terminal on startup
-    hl.exec_cmd(terminal)
 end)
 
 
@@ -145,7 +144,7 @@ hl.config({
 
         resize_on_border = true,
         allow_tearing    = false,
-        layout           = "dwindle",
+        layout           = "master",     -- master | dwindle  (Super+Ctrl+D / Super+Ctrl+Shift+D to switch)
     },
 
     decoration = {
@@ -194,15 +193,8 @@ hl.config({
             },
         },
 
-        -- Windows sway like a heavy tent canvas when dragged (custom build feature)
-        wobble = {
-            enabled   = true,
-            intensity = 0.10,
-            stiffness = 150,
-            damping   = 14,
-            mass      = 1.6,
-            mesh      = 12,
-        },
+        -- Wobble (jelly windows while dragging) is off
+        wobble = { enabled = false },
     },
 
     animations = {
@@ -211,34 +203,43 @@ hl.config({
 })
 
 -- Motion language: slow, heavy, deliberate. Things emerge from haze and settle like sand.
-hl.curve("sandSettle", { type = "bezier", points = { {0.16, 1},    {0.30, 1} } })   -- long ease-out
-hl.curve("duneRise",   { type = "bezier", points = { {0.22, 0.9},  {0.20, 1.02} } }) -- tiny overshoot
-hl.curve("haze",       { type = "bezier", points = { {0.45, 0},    {0.25, 1} } })    -- fade from haze
-hl.curve("wind",       { type = "bezier", points = { {0.55, 0},    {0.85, 0.35} } }) -- swept away
+hl.curve("sandSettle", { type = "bezier", points = { {0.22, 1},    {0.36, 1} } })   -- easeOutQuint: fast start, long silky settle
+hl.curve("spring",     { type = "bezier", points = { {0.34, 1.35}, {0.64, 1} } })   -- soft spring overshoot
+hl.curve("glide",      { type = "bezier", points = { {0.65, 0},    {0.35, 1} } })   -- easeInOutCubic for moves between places
+hl.curve("haze",       { type = "bezier", points = { {0.25, 0.8},  {0.25, 1} } })   -- gentle fade
+hl.curve("wind",       { type = "bezier", points = { {0.5, 0},     {0.75, 0} } })   -- accelerate away (exits)
 hl.curve("linear",     { type = "bezier", points = { {0, 0},       {1, 1} } })
 
-hl.animation({ leaf = "global",        enabled = true, speed = 8,   bezier = "sandSettle" })
-hl.animation({ leaf = "border",        enabled = true, speed = 8,   bezier = "haze" })
+-- Vertical language: the external monitor sits ABOVE the laptop, so workspaces, panels and
+-- windows travel up/down rather than left/right.
+hl.animation({ leaf = "global",        enabled = true, speed = 5,   bezier = "sandSettle" })
+hl.animation({ leaf = "border",        enabled = true, speed = 6,   bezier = "haze" })
 hl.animation({ leaf = "borderangle",   enabled = true, speed = 100, bezier = "linear", style = "loop" })
-hl.animation({ leaf = "windowsIn",     enabled = true, speed = 6,   bezier = "duneRise",   style = "popin 92%" })
-hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4,   bezier = "wind",       style = "slide right" })
-hl.animation({ leaf = "windowsMove",   enabled = true, speed = 6,   bezier = "sandSettle" })
-hl.animation({ leaf = "fadeIn",        enabled = true, speed = 6,   bezier = "haze" })
-hl.animation({ leaf = "fadeOut",       enabled = true, speed = 4,   bezier = "wind" })
-hl.animation({ leaf = "fadeDim",       enabled = true, speed = 8,   bezier = "haze" })
-hl.animation({ leaf = "layersIn",      enabled = true, speed = 5,   bezier = "sandSettle", style = "fade" })
-hl.animation({ leaf = "layersOut",     enabled = true, speed = 3,   bezier = "wind",       style = "fade" })
-hl.animation({ leaf = "workspaces",    enabled = true, speed = 7,   bezier = "sandSettle", style = "slidefade 18%" })
-hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 6, bezier = "sandSettle", style = "slidefadevert 25%" })
+hl.animation({ leaf = "windowsIn",     enabled = true, speed = 3,   bezier = "haze",       style = "popin 100%" })   -- plain quick fade, no scaling
+hl.animation({ leaf = "windowsOut",    enabled = true, speed = 2.5, bezier = "haze",       style = "popin 100%" })
+hl.animation({ leaf = "windowsMove",   enabled = true, speed = 4.5, bezier = "sandSettle" })
+hl.animation({ leaf = "fadeIn",        enabled = true, speed = 4,   bezier = "haze" })
+hl.animation({ leaf = "fadeOut",       enabled = true, speed = 3,   bezier = "haze" })
+hl.animation({ leaf = "fadeDim",       enabled = true, speed = 5,   bezier = "haze" })
+hl.animation({ leaf = "layersIn",      enabled = true, speed = 4,   bezier = "sandSettle", style = "slide" })
+hl.animation({ leaf = "layersOut",     enabled = true, speed = 3,   bezier = "glide",      style = "slide" })
+hl.animation({ leaf = "workspaces",    enabled = true, speed = 5,   bezier = "sandSettle", style = "slidefade 20%" })
+hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "sandSettle", style = "slidefadevert 35%" })
 
 hl.config({
     dwindle = {
-        preserve_split = true,
-        smart_split    = false,
-        smart_resizing = true,
+        preserve_split      = true,
+        smart_split         = false,
+        smart_resizing      = true,
+        special_scale_factor = 0.8,
     },
+    -- Master layout (from old config): big master on the left, stack on the right.
+    -- New windows join the stack (at the top) instead of taking over the master slot.
     master = {
-        new_status = "master",
+        new_status           = "slave",
+        new_on_top           = true,
+        mfact                = 0.6,
+        special_scale_factor = 0.8,
     },
     misc = {
         force_default_wallpaper = 0,
@@ -267,7 +268,7 @@ hl.config({
     },
 })
 
--- 3-finger horizontal swipe: switch workspace
+-- 3-finger horizontal swipe: switch workspace (matches the horizontal slide animation)
 hl.gesture({
     fingers   = 3,
     direction = "horizontal",
@@ -301,13 +302,81 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 
--- Hyperbolic Plugin Floating Window Toggle (Preserved & Enhanced)
-hl.bind(mainMod .. " + SPACE", function()
-    if not hl.plugin.hyperbolic.is_enabled() then
-        hl.plugin.hyperbolic.enable()
+-- Floating-only workspace (SUPER+SPACE): toggles the *current workspace* between normal tiling
+-- and "everything floats". Existing windows are floated, new windows opening there float too;
+-- toggling off tiles back only the windows this mode floated.
+local floatWs   = {}   -- workspace id -> true while float mode is on
+FloatWorkspaces = floatWs  -- (global, for debugging: hyprctl eval "FloatWorkspaces[20]=true")
+local floatedBy = {}   -- window address -> true if float mode (not you) floated it
+
+local function wsOf(w)
+    local ok, id = pcall(function() return w.workspace and w.workspace.id end)
+    return ok and id or nil
+end
+
+local function float_window(w)
+    local ok, fl = pcall(function() return w.floating end)
+    if not ok or fl then return end
+    floatedBy[w.address] = true
+    hl.dispatch(hl.dsp.window.float({ action = "enable", window = w }))
+end
+
+-- New windows in float mode: fixed size, centred, cascading down-right so they never hide each other.
+-- (Without this a freshly floated window keeps whatever its tiling slot was: odd sizes and positions.)
+local function place_new(w)
+    local ok = pcall(function()
+        local mon = w.monitor
+        local id  = wsOf(w)
+        local mw, mh = mon.width / mon.scale, mon.height / mon.scale
+        local pw, ph = math.max(640, math.floor(mw * 0.60)), math.max(420, math.floor(mh * 0.72))
+
+        local others = 0
+        for _, o in ipairs(hl.get_windows({ workspace = id, floating = true })) do
+            if o.address ~= w.address then others = others + 1 end
+        end
+        local off = (others % 7) * 34
+
+        hl.dispatch(hl.dsp.window.resize({ x = pw, y = ph, window = w }))
+        hl.dispatch(hl.dsp.window.center({ window = w }))
+        local at = w.at
+        local x, y = at.x or at[1], at.y or at[2]
+        hl.dispatch(hl.dsp.window.move({ x = x - 3 * 34 + off, y = y - 3 * 34 + off, window = w }))
+    end)
+    return ok
+end
+
+local function on_window_arrived(w)
+    if not (w and floatWs[wsOf(w)]) then return end
+    float_window(w)
+    -- let the app/layout settle first, then place
+    hl.timer(function() place_new(w) end, { timeout = 80, type = "oneshot" })
+end
+hl.on("window.open", on_window_arrived)
+hl.on("window.move_to_workspace", on_window_arrived)
+
+function ToggleFloatWorkspace()
+    local ws = hl.get_active_workspace()
+    local id = ws and ws.id
+    if not id then return end
+
+    if floatWs[id] then
+        floatWs[id] = nil
+        for _, w in ipairs(hl.get_windows({ workspace = id, floating = true })) do
+            if floatedBy[w.address] then
+                floatedBy[w.address] = nil
+                hl.dispatch(hl.dsp.window.float({ action = "disable", window = w }))
+            end
+        end
+        hl.exec_cmd("notify-send -a Arrakis 'Workspace " .. id .. "' 'Tiling'")
+    else
+        floatWs[id] = true
+        for _, w in ipairs(hl.get_windows({ workspace = id, floating = false })) do
+            float_window(w)
+        end
+        hl.exec_cmd("notify-send -a Arrakis 'Workspace " .. id .. "' 'Floating only'")
     end
-    hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
-end)
+end
+hl.bind(mainMod .. " + SPACE", ToggleFloatWorkspace)
 
 -- Launcher & Control Center
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
@@ -379,14 +448,15 @@ hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 -- Window Drag & Resize with Mouse
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+hl.bind(mainMod .. " + SHIFT + mouse:272", hl.dsp.window.resize(), { mouse = true })  -- Super+Shift+drag also resizes (left button)
 
 -- Laptop Multimedia & Audio Keys
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("sh -c 'wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+; qs ipc call osd volume'"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("sh -c 'wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-; qs ipc call osd volume'"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("sh -c 'wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle; qs ipc call osd volume'"),     { locked = true, repeating = true })
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl set 5%+"),                          { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl set 5%-"),                          { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("sh -c 'brightnessctl set 5%+; qs ipc call osd brightness'"),                          { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("sh -c 'brightnessctl set 5%-; qs ipc call osd brightness'"),                          { locked = true, repeating = true })
 
 -- Media Player Keys
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
@@ -403,6 +473,7 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 hl.layer_rule({ name = "qs-bar-blur",            match = { namespace = "^qs-bar$" },            blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-launcher-blur",       match = { namespace = "^qs-launcher$" },       blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-control-center-blur", match = { namespace = "^qs-control-center$" }, blur = true, ignore_alpha = 0 })
+hl.layer_rule({ name = "qs-osd-blur",            match = { namespace = "^qs-osd$" },            blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-notifications-blur",  match = { namespace = "^qs-notifications$" },  blur = true, ignore_alpha = 0 })
 
 -- App Finder & Power Dialog blur
@@ -417,13 +488,14 @@ hl.layer_rule({ name = "notifs-blur",            match = { namespace = "^notific
 --------------------------------
 
 -- Glassy Translucency for Core Applications
-hl.window_rule({
+OPACITY_RULES = {}   -- global: toggled by scripts/powermode (opaque windows when blur is off)
+OPACITY_RULES[#OPACITY_RULES+1] = hl.window_rule({
     name  = "kitty-opacity",
     match = { class = "^(kitty|Alacritty)$" },
     opacity = 0.88,
 })
 
-hl.window_rule({
+OPACITY_RULES[#OPACITY_RULES+1] = hl.window_rule({
     name  = "dolphin-opacity",
     match = { class = "^(org.kde.dolphin|dolphin)$" },
     opacity = 0.90,
@@ -565,7 +637,7 @@ hl.window_rule({ name = "htop-float",
     match = { class = "^htop-float$" }, float = true, center = true, size = "1200 800" })
 hl.window_rule({ name = "no-dim-media",
     match = { class = "^(firefox|librewolf|zen|chromium|google-chrome|vlc|mpv|imv)$" }, no_dim = true })
-hl.window_rule({ name = "editor-opacity",
+OPACITY_RULES[#OPACITY_RULES+1] = hl.window_rule({ name = "editor-opacity",
     match = { class = "^(dev.zed.Zed|code)$" }, opacity = 0.92 })
 
 -- Idle: lock/dim/suspend (hypridle.conf), and fix slow app launches via env import
@@ -588,6 +660,13 @@ hb("W", hl.dsp.exec_cmd("qs ipc call sand toggle"))          -- drifting sand on
 hb("G", hl.dsp.exec_cmd("qs ipc call sand gust"))            -- summon a gust
 hb("I", hl.dsp.exec_cmd("qs ipc call intro play"))           -- replay title card
 hb("M", hl.dsp.exec_cmd(scripts .. "/sfx toggle"))           -- mute sound effects
+
+-- Master layout (as in the old config): Hyper+D swap focused window with master,
+-- Hyper+F / Hyper+Shift+F roll focus through the stack, Hyper+A jump to master
+hb("D", hl.dsp.layout("swapwithmaster"))
+hb("F", hl.dsp.layout("rollnext"))
+hb("SHIFT + F", hl.dsp.layout("rollprev"))
+hb("A", hl.dsp.layout("focusmaster"))
 
 -- Fresh starts: terminal / launcher on a new empty workspace
 hb("RETURN", function()
@@ -621,3 +700,48 @@ hb("TAB",  hl.dsp.focus({ monitor = "+1" }))                  -- jump between mo
 
 -- Intro and sand layers: no blur, no layer animation (they animate themselves)
 hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sandstorm)$" }, no_anim = true })
+
+
+------------------------------------------------------------
+---- FEATURES ADDED 2026-11-22: scrolling, workspaces,   ----
+---- night light, colour picker, overview, find-cursor   ----
+------------------------------------------------------------
+
+-- Workspaces 1-4 live on the external monitor (above), 5-8 on the laptop (below).
+-- If the external is unplugged they simply fall back to the laptop.
+for i = 1, 4 do hl.workspace_rule({ workspace = tostring(i), monitor = "HDMI-A-1", persistent = true, default = (i == 1) }) end
+for i = 5, 8 do hl.workspace_rule({ workspace = tostring(i), monitor = "eDP-1",    persistent = true, default = (i == 5) }) end
+hl.workspace_rule({ workspace = "4", layout = "scrolling" })   -- workspace 4 = the endless strip
+
+-- Pin apps to named homes (silent: never yanks you away from what you're doing)
+hl.window_rule({ name = "ws-browser", match = { class = "^(google-chrome|firefox|zen|chromium)$" },  workspace = "2 silent" })
+hl.window_rule({ name = "ws-editor",  match = { class = "^(dev.zed.Zed|code)$" },                   workspace = "3 silent" })
+
+-- Layouts: SUPER+CTRL+S = scrolling (D = dwindle, SHIFT+D = master, defined above)
+hl.bind(mainMod .. " + CTRL + S", function() hl.config({ general = { layout = "scrolling" } }) end)
+-- Scrolling controls (SUPER+ALT+...): resize column, fit, swap columns
+hl.bind(mainMod .. " + ALT + bracketright", hl.dsp.layout("colresize +0.1"), { repeating = true })
+hl.bind(mainMod .. " + ALT + bracketleft",  hl.dsp.layout("colresize -0.1"), { repeating = true })
+hl.bind(mainMod .. " + ALT + backslash",    hl.dsp.layout("colresize +conf"))   -- cycle 1/3 · 1/2 · 2/3 · full
+hl.bind(mainMod .. " + ALT + equal",        hl.dsp.layout("fit visible"))
+hl.bind(mainMod .. " + ALT + minus",        hl.dsp.layout("promote"))           -- pull window into its own column
+
+-- Night light (hyprsunset): warm after 20:00 automatically; HYPER+N toggles by hand
+hl.on("hyprland.start", function()
+    hl.exec_cmd("hyprsunset")
+    hl.exec_cmd(scripts .. "/powermode watch")   -- 48Hz + no blur/sand on battery, full eye-candy on AC
+end)
+hb("N", hl.dsp.exec_cmd(scripts .. "/nightlight"))
+
+-- Colour picker: HYPER+C -> click a pixel, hex goes to the clipboard
+hb("C", hl.dsp.exec_cmd("sh -c 'command -v hyprpicker >/dev/null || { notify-send -a Arrakis \"hyprpicker missing\" \"sudo pacman -S hyprpicker\"; exit; }; c=$(hyprpicker -a -f hex) && notify-send -a Arrakis \"Colour\" \"$c\"'"))
+
+-- Find the cursor: HYPER+E pulses rings around it (Quickshell Locator.qml)
+hb("E", hl.dsp.exec_cmd("sh -c 'qs ipc call locator ping $(hyprctl cursorpos | tr -d \" \" | tr , \" \")'"))
+
+-- Scroll the scrolling-layout strip:
+--   4-finger horizontal swipe on the touchpad drags the strip (3-finger stays workspace switch)
+--   SUPER+SHIFT + mouse wheel steps column by column
+hl.gesture({ fingers = 4, direction = "horizontal", action = "scroll_move" })
+hl.bind(mainMod .. " + SHIFT + mouse_down", hl.dsp.layout("move +col"))
+hl.bind(mainMod .. " + SHIFT + mouse_up",   hl.dsp.layout("move -col"))

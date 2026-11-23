@@ -1,0 +1,3 @@
+# Lets the Power Saver tile / scripts/powermode switch TLP profiles without a password prompt.
+# Install:  sudo install -m 0440 -o root -g root ~/.config/hypr/tlp/sudoers-powermode /etc/sudoers.d/tlp-powermode
+gopal ALL=(root) NOPASSWD: /usr/bin/tlp performance, /usr/bin/tlp power-saver, /usr/bin/tlp start
