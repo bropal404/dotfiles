@@ -507,7 +507,7 @@ hl.window_rule({
 
 
 ---------------------------------------------------
----- CARRIED OVER FROM OLD CONFIG (1hypr.tar.gz) ----
+---- CARRIED OVER FROM OLD CONFIG ----
 ---------------------------------------------------
 
 local scripts = os.getenv("HOME") .. "/.config/hypr/scripts"
