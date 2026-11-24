@@ -206,7 +206,6 @@ hl.config({
         preserve_split      = true,
         smart_split         = false,
         smart_resizing      = true,
-        special_scale_factor = 0.8,
     },
     -- Master layout (from old config): big master on the left, stack on the right.
     -- New windows join the stack (at the top) instead of taking over the master slot.
@@ -214,7 +213,6 @@ hl.config({
         new_status           = "slave",
         new_on_top           = true,
         mfact                = 0.6,
-        special_scale_factor = 0.8,
     },
     misc = {
         force_default_wallpaper = 0,
@@ -225,6 +223,10 @@ hl.config({
         allow_new_top_layers_over_existing_fullscreen = true,
     },
 })
+
+-- Scratchpad (special:magic): windows sit inset from the edges (replaces the deprecated
+-- dwindle/master special_scale_factor = 0.8)
+hl.workspace_rule({ workspace = "special:magic", gaps_out = { top = 60, right = 110, bottom = 60, left = 110 } })
 
 hl.config({
     input = {

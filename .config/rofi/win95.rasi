@@ -1,0 +1,90 @@
+* {
+    face:    #c0c0c0;
+    light:   #dfdfdf;
+    hilite:  #ffffff;
+    shadow:  #808080;
+    dark:    #000000;
+    navy:    #000080;
+
+    background-color: transparent;
+    text-color:       @dark;
+    margin: 0; padding: 0; spacing: 0;
+}
+
+/* raised outer frame: white top-left, black bottom-right */
+window {
+    location:         south west;
+    anchor:           south west;
+    x-offset:         3px;
+    y-offset:         -31px;
+    width:            300px;
+    background-color: @face;
+    border:           1px 0 0 1px;
+    border-color:     @hilite;
+}
+
+mainbox {
+    orientation:  horizontal;
+    children:     [ banner, content ];
+    border:       0 1px 1px 0;
+    border-color: @dark;
+    padding:      2px;
+}
+
+banner {
+    expand:           false;
+    width:            30px;
+    background-color: @shadow;
+}
+
+content {
+    orientation: vertical;
+    children:    [ listview, inputbar ];
+    padding:     0 0 0 2px;
+}
+
+listview {
+    lines:        10;
+    columns:      1;
+    fixed-height: true;
+    scrollbar:    false;
+}
+
+element          { padding: 5px 8px; spacing: 10px; }
+element-icon     { size: 24px; }
+element-text     { text-color: inherit; vertical-align: 0.5; }
+element normal.normal, element alternate.normal,
+element normal.active, element alternate.active { text-color: @dark; }
+element selected.normal, element selected.active,
+element selected.urgent { background-color: @navy; text-color: @hilite; }
+
+/* "Run…" field: label + sunken white box */
+inputbar {
+    children:     [ prompt, entry ];
+    padding:      6px 4px 4px 4px;
+    spacing:      6px;
+    border:       1px 0 0 0;
+    border-color: @shadow;
+}
+prompt { vertical-align: 0.5; }
+entry {
+    background-color:  @hilite;
+    border:            1px 0 0 1px;
+    border-color:      @shadow;
+    padding:           3px 4px;
+    placeholder:       "Type a name…";
+    placeholder-color: @shadow;
+    cursor:            text;
+}
+
+mode-switcher { spacing: 2px; padding: 0 0 4px 0; }
+button {
+    padding:          3px 0;
+    background-color: @face;
+    border:           1px;
+    border-color:     @shadow;
+}
+button selected { background-color: @hilite; }
+
+message { padding: 6px; }
+textbox { text-color: @dark; }

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# 1995-style launcher: rofi if installed, otherwise wofi.
+#   launch apps  -> Start menu (bottom-left, above the taskbar)
+#   launch find  -> centred dialog with Programs / Run / Windows / Files tabs
+mode="${1:-apps}"
+if command -v rofi >/dev/null 2>&1; then
+    pkill -x rofi && exit 0          # clicking Start again closes the menu
+    case "$mode" in
+        find) exec rofi -show drun -modes "drun,run,window,filebrowser" \
+                -theme-str 'window { location: center; anchor: center; x-offset: 0; y-offset: 0; width: 460px; }
+                            mainbox { children: [ content ]; }
+                            content { children: [ inputbar, mode-switcher, listview ]; }
+                            inputbar { border: 0 0 1px 0; padding: 6px 4px; }
+                            prompt { str: "Open:"; }' ;;
+        *)    exec rofi -show drun ;;
+    esac
+else
+    exec wofi --show drun
+fi
