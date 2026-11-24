@@ -38,9 +38,8 @@ cat <<'WARN'
   │ to tweak things.                                                        │
   │                                                                         │
   │ Also be aware:                                                          │
-  │  • It targets a CUSTOM Hyprland build (decoration.wobble and            │
-  │    decoration.blur.water do not exist upstream) and Hyprland >= 0.57    │
-  │    with the Lua config format. On stock Hyprland those options error.   │
+  │  • It needs Hyprland >= 0.57, which uses the Lua config format          │
+  │    (hyprland.lua). Older versions will not read it.                     │
   │  • Monitor names (HDMI-A-1 / eDP-1), VRR, power and TLP settings are    │
   │    tuned for one laptop. Adjust them for your hardware.                 │
   │  • Existing ~/.config/{hypr,quickshell,kitty,rofi,wlogout} are moved    │

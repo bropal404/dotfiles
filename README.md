@@ -9,9 +9,8 @@ and procedurally synthesised sound effects.
 > [!WARNING]
 > **Parts of this configuration were written by an AI assistant (Claude).** It has only been used
 > on one machine and has not been reviewed line by line — read it before you install it.
-> It also targets a **custom Hyprland 0.57 build** (Lua config; `decoration.wobble` and
-> `decoration.blur.water` don't exist upstream) and is tuned for one laptop (monitor names,
-> VRR, TLP). Expect to adjust things.
+> It targets **Hyprland 0.57+** (the Lua config format; `hyprland.lua`, not `hyprland.conf`) and is
+> tuned for one laptop (monitor names, VRR, TLP). Expect to adjust things.
 
 | Launcher | Power menu (hold to confirm) |
 |---|---|
