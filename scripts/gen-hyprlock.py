@@ -35,7 +35,7 @@ general {
 animations {
     enabled = true
     bezier = haze, 0.45, 0, 0.25, 1
-    animation = fadeIn, 1, 9, haze
+    animation = fadeIn, 0                 # instant: a slow fade-in shows the desktop for ~1s after waking from sleep
     animation = fadeOut, 1, 6, haze
     animation = inputFieldDots, 1, 3, haze
 }

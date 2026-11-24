@@ -4,7 +4,7 @@
 #   powermode get      — prints "<override> <effective>", e.g. "auto battery"
 #   powermode watch    — apply now, then re-apply whenever AC is plugged/unplugged (autostarted)
 #   powermode battery  — spinning border off (biggest saver: it forces a redraw every frame), backlight capped at 50%, blur + shadows off, windows opaque, sandstorm off (refresh rate untouched)
-#   powermode ac       — blur + shadows on, translucent windows, sandstorm on
+#   powermode ac       — blur + shadows on, translucent windows (sandstorm stays off unless you toggle it with HYPER+W)
 # VRR is set once in hyprland.lua (monitor rule); it cannot be flipped live in this build.
 # CPU/GPU/PCIe tuning is TLP's job (tlp/10-pavilion-8845hs.conf); this covers the compositor.
 # Manual "set" also flips the TLP profile (saver = power-saver, performance = performance, auto = by charger)
@@ -62,7 +62,6 @@ battery() {
 ac() {
     if [ -r "$BRSTATE" ]; then brightnessctl set "$(cat "$BRSTATE")" >/dev/null; rm -f "$BRSTATE"; fi
     hyprctl eval 'hl.config({ decoration = { blur = { enabled = true }, shadow = { enabled = true }, active_opacity = 0.95, inactive_opacity = 0.86, dim_inactive = true } }); for _, r in ipairs(OPACITY_RULES or {}) do r:set_enabled(true) end; hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "linear", style = "loop" })' >/dev/null
-    qs ipc call sand enable >/dev/null 2>&1
 }
 
 case "$1" in

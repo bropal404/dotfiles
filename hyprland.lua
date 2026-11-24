@@ -1,7 +1,7 @@
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- MODERN BLURRY HYPRLAND LUA CONFIGURATION                             --
 -- With Quickshell (M3 Bar, Control Center, Notifications),             --
--- Hyperbolic Plugin, Multi-Monitor Stack, and Frosted Glass Aesthetics  --
+-- Multi-Monitor Stack, and Frosted Glass Aesthetics  --
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -------------------------------
@@ -73,31 +73,6 @@ local controlCenter = "qs ipc call controlcenter toggle"      -- Quickshell Cont
 local search        = "/home/gopal/.config/rofi/launch find" -- rofi: apps / run / windows / files
 local exitMenu      = "qs ipc call power toggle"   -- hold-to-confirm power menu (PowerMenu.qml)
 local lockScreen    = os.getenv("HOME") .. "/.config/hypr/scripts/lock"  -- thumper + hyprlock + wind
-
-
---------------------
----- PLUGINS ------
---------------------
-
--- Load the Hyperbolic plugin for dynamic window resizing as they move
-hl.plugin.load(os.getenv("HOME") .. "/.local/lib/hyprland-plugins/hyperbolic.so")
-
--- Configure Hyperbolic
-hl.config({
-    plugin = {
-        hyperbolic = {
-            enabled            = true,
-            ["function"]       = "rational", -- rational | gaussian | hyperbola
-            alpha              = 2.0,
-            base_width         = 0.50,
-            base_height        = 0.80,
-            min_scale          = 0.08,
-            animation_speed    = 12.0,
-            visual_scale_ratio = 0.5,        -- 0.0 = buffer resize only, 1.0 = visual scale only, 0.5 = 50/50 blend
-            min_visual_scale   = 0.20,
-        },
-    },
-})
 
 
 -------------------
@@ -539,7 +514,24 @@ local scripts = os.getenv("HOME") .. "/.config/hypr/scripts"
 
 -- Window state
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({}))
-hl.bind(mainMod .. " + Y", hl.dsp.window.pin({}))
+
+-- Pin active window to all workspaces (auto-floats tiled windows since Hyprland requires floating to pin)
+local function toggle_pin_window()
+    local win = hl.get_active_window()
+    if not win then return end
+    if win.pinned then
+        hl.dispatch(hl.dsp.window.pin({ window = win }))
+        hl.exec_cmd("notify-send -a Arrakis 'Window Unpinned' 'Unpinned from workspaces'")
+    else
+        if not win.floating then
+            hl.dispatch(hl.dsp.window.float({ action = "enable", window = win }))
+        end
+        hl.dispatch(hl.dsp.window.pin({ window = win }))
+        hl.exec_cmd("notify-send -a Arrakis 'Window Pinned' 'Pinned to all workspaces'")
+    end
+end
+hl.bind(mainMod .. " + Y", toggle_pin_window)
+hl.bind(mainMod .. " + SHIFT + P", toggle_pin_window)
 
 -- Floating presets: float + resize + center (old SHIFT+V / B / N)
 local function float_preset(w, h)
@@ -559,8 +551,14 @@ hl.bind(mainMod .. " + SHIFT + G",       function() hl.config({ general = { gaps
 hl.bind(mainMod .. " + CTRL + G",        function() hl.config({ general = { gaps_in = 5, gaps_out = 10 } }) end)
 
 -- Layout switching + master-layout controls
-hl.bind(mainMod .. " + CTRL + D",         function() hl.config({ general = { layout = "dwindle" } }) end)
-hl.bind(mainMod .. " + CTRL + SHIFT + D", function() hl.config({ general = { layout = "master" } }) end)
+CurLayout = "master"
+function SetLayout(name)
+    CurLayout = name
+    hl.config({ general = { layout = name } })
+    hl.exec_cmd("qs ipc call osd layout " .. name)
+end
+hl.bind(mainMod .. " + CTRL + D",         function() SetLayout("dwindle") end)
+hl.bind(mainMod .. " + CTRL + SHIFT + D", function() SetLayout("master") end)
 hl.bind(mainMod .. " + backslash",         hl.dsp.layout("orientationnext"))
 hl.bind(mainMod .. " + CTRL + backslash",  hl.dsp.layout("orientationprev"))
 hl.bind(mainMod .. " + SHIFT + backslash", hl.dsp.layout("mfact exact 0.5"))
@@ -653,7 +651,7 @@ end)
 -------------------------
 -- ── HYPER LAYER (Caps Lock) ──────────────────────────────────────────────
 local hyper = "MOD3"
-local function hb(key, action) hl.bind(hyper .. " + " .. key, action) end
+local function hb(key, action, opts) hl.bind(hyper .. " + " .. key, action, opts) end
 
 -- Dune
 hb("W", hl.dsp.exec_cmd("qs ipc call sand toggle"))          -- drifting sand on/off
@@ -690,13 +688,27 @@ end)
 hb("L", hl.dsp.exec_cmd("sh -c 'if pgrep -x hypridle >/dev/null; then pkill -x hypridle; notify-send -a Arrakis \"Auto-lock off\" \"Screen stays awake\"; else setsid hypridle >/dev/null 2>&1 & notify-send -a Arrakis \"Auto-lock on\"; fi'"))
 
 -- Windows & workspaces
+-- Hyper + number moves active window to that workspace (1-10)
+for i = 1, 10 do
+    local key = tostring(i % 10)
+    hb(key, hl.dsp.window.move({ workspace = i }))
+end
+
+hb("Y", toggle_pin_window)                                    -- pin window to all workspaces
 hb("T", hl.dsp.group.toggle({}))                              -- tab group
 hb("bracketleft",  hl.dsp.window.move({ workspace = "-1" }))  -- carry window to prev workspace
 hb("bracketright", hl.dsp.window.move({ workspace = "+1" }))  -- carry window to next workspace
 hb("backslash",    hl.dsp.window.move({ workspace = "empty" }))
-hb("up",   hl.dsp.workspace.move({ monitor = "u" }))          -- push workspace to monitor above
-hb("down", hl.dsp.workspace.move({ monitor = "d" }))          -- push workspace to laptop below
-hb("TAB",  hl.dsp.focus({ monitor = "+1" }))                  -- jump between monitors
+hb("SHIFT + up",   hl.dsp.workspace.move({ monitor = "u" }))   -- push workspace to monitor above
+hb("SHIFT + down", hl.dsp.workspace.move({ monitor = "d" }))   -- push workspace to laptop below
+-- Move the focused window around (swaps with the neighbour / moves between columns)
+hb("left",  hl.dsp.window.move({ direction = "left" }))
+hb("right", hl.dsp.window.move({ direction = "right" }))
+hb("up",    hl.dsp.window.move({ direction = "up" }))
+hb("down",  hl.dsp.window.move({ direction = "down" }))
+-- Master layout: cycle focus through the windows
+hb("S",         hl.dsp.layout("cyclenext"))
+hb("SHIFT + S", hl.dsp.layout("cycleprev"))
 
 -- Intro and sand layers: no blur, no layer animation (they animate themselves)
 hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sandstorm)$" }, no_anim = true })
@@ -709,22 +721,23 @@ hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sand
 
 -- Workspaces 1-4 live on the external monitor (above), 5-8 on the laptop (below).
 -- If the external is unplugged they simply fall back to the laptop.
-for i = 1, 4 do hl.workspace_rule({ workspace = tostring(i), monitor = "HDMI-A-1", persistent = true, default = (i == 1) }) end
-for i = 5, 8 do hl.workspace_rule({ workspace = tostring(i), monitor = "eDP-1",    persistent = true, default = (i == 5) }) end
-hl.workspace_rule({ workspace = "4", layout = "scrolling" })   -- workspace 4 = the endless strip
+-- (Default per-workspace monitor/layout rules and app->workspace pinning removed 2026-11-24:
+--  workspaces are now plain/dynamic; the layout is global and switched with the binds below.)
 
 -- Pin apps to named homes (silent: never yanks you away from what you're doing)
-hl.window_rule({ name = "ws-browser", match = { class = "^(google-chrome|firefox|zen|chromium)$" },  workspace = "2 silent" })
-hl.window_rule({ name = "ws-editor",  match = { class = "^(dev.zed.Zed|code)$" },                   workspace = "3 silent" })
 
 -- Layouts: SUPER+CTRL+S = scrolling (D = dwindle, SHIFT+D = master, defined above)
-hl.bind(mainMod .. " + CTRL + S", function() hl.config({ general = { layout = "scrolling" } }) end)
--- Scrolling controls (SUPER+ALT+...): resize column, fit, swap columns
-hl.bind(mainMod .. " + ALT + bracketright", hl.dsp.layout("colresize +0.1"), { repeating = true })
-hl.bind(mainMod .. " + ALT + bracketleft",  hl.dsp.layout("colresize -0.1"), { repeating = true })
-hl.bind(mainMod .. " + ALT + backslash",    hl.dsp.layout("colresize +conf"))   -- cycle 1/3 · 1/2 · 2/3 · full
-hl.bind(mainMod .. " + ALT + equal",        hl.dsp.layout("fit visible"))
-hl.bind(mainMod .. " + ALT + minus",        hl.dsp.layout("promote"))           -- pull window into its own column
+hl.bind(mainMod .. " + CTRL + S", function() SetLayout("scrolling") end)
+hl.bind(hyper .. " + TAB", function()   -- cycle master -> dwindle -> scrolling
+    local nxt = { master = "dwindle", dwindle = "scrolling", scrolling = "master" }
+    SetLayout(nxt[CurLayout] or "master")
+end)
+-- Scrolling controls (HYPER+...): resize column, fit, swap columns
+hb("equal", hl.dsp.layout("colresize +0.1"), { repeating = true })
+hb("minus", hl.dsp.layout("colresize -0.1"), { repeating = true })
+hb("B", hl.dsp.layout("colresize +conf"))   -- cycle 1/3 · 1/2 · 2/3 · full
+hb("V", hl.dsp.layout("fit visible"))
+hb("U", hl.dsp.layout("promote"))           -- pull window into its own column
 
 -- Night light (hyprsunset): warm after 20:00 automatically; HYPER+N toggles by hand
 hl.on("hyprland.start", function()
