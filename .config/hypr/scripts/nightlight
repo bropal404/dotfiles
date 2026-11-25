@@ -9,7 +9,7 @@ case "${1:-toggle}" in
     status) on && echo on || echo off ;;
     toggle)
         if on; then
-            hyprctl hyprsunset identity >/dev/null && "$T" "Night light" "Off" "󰖨"
+            hyprctl hyprsunset temperature 6000 >/dev/null && "$T" "Night light" "Off" "󰖨"
         else
             hyprctl hyprsunset temperature 3800 >/dev/null && "$T" "Night light" "On · 3800K" "󰌵"
         fi ;;
