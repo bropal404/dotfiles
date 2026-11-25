@@ -45,6 +45,7 @@ Singleton {
 
     function setWifi(on) {
         wifiEnabled = on;
+        Toast.state(on ? "󰤨" : "󰤮", "Wi-Fi", on);
         Quickshell.execDetached(["nmcli", "radio", "wifi", on ? "on" : "off"]);
     }
     function connect(n, password) {

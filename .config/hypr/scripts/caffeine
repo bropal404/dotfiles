@@ -1,0 +1,18 @@
+#!/bin/sh
+# Caffeine = keep the screen awake: stops hypridle (dim / lock / suspend) until switched off.
+#   caffeine [toggle]   flip it, with a toast
+#   caffeine status     prints "on" (awake forced) or "off" (hypridle running)
+T=$(dirname "$0")/toast
+on() { ! pgrep -x hypridle >/dev/null; }
+case "${1:-toggle}" in
+    status) on && echo on || echo off ;;
+    toggle)
+        if on; then
+            setsid hypridle >/dev/null 2>&1 &
+            "$T" "Caffeine" "Off · auto-lock on" "󰛊"
+        else
+            pkill -x hypridle
+            "$T" "Caffeine" "On · screen stays awake" "󰅶"
+        fi ;;
+    *) echo "usage: caffeine [toggle|status]" >&2; exit 1 ;;
+esac

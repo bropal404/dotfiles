@@ -73,12 +73,12 @@ case "$1" in
         echo "$2" > "$OVERRIDE"
         sync force >/dev/null
         tlp_profile "$2"
-        notify-send -a Arrakis "Power mode: $2" "$([ "$2" = auto ] && echo "following charger ($(effective))" || echo "manual")" 2>/dev/null ;;
+        "$(dirname "$0")/toast" "Power mode" "$2 · $([ "$2" = auto ] && echo "following charger ($(effective))" || echo "manual")" 󰌪 ;;
     watch)
         sleep 4                       # let Hyprland + Quickshell finish starting
         sync force >/dev/null
         udevadm monitor --udev --subsystem-match=power_supply 2>/dev/null | while read -r _; do
-            sync >/dev/null && [ "$(override)" = auto ] && notify-send -a Arrakis "Power: $(cat "$APPLIED")" 2>/dev/null
+            sync >/dev/null && [ "$(override)" = auto ] && "$(dirname "$0")/toast" "Power" "$(cat "$APPLIED")" 󰂄
         done ;;
     *) sync force ;;
 esac

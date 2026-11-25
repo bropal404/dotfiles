@@ -7,7 +7,9 @@ import QtQuick.Layouts
 Card {
     id: card
     property int idx: 0
-    readonly property var players: Mpris.players.values
+    // only players that are playing, or paused with a track loaded (so you can resume);
+    // idle / stopped / empty players (e.g. a browser with no media) don't count
+    readonly property var players: Mpris.players.values.filter(p => p.isPlaying || (p.playbackState === MprisPlaybackState.Paused && (p.trackTitle ?? "") !== ""))
     readonly property var player: players.length === 0 ? null
         : players.find(p => p.isPlaying && idx === 0) ?? players[Math.min(idx, players.length - 1)]
 

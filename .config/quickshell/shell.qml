@@ -99,6 +99,17 @@ ShellRoot {
         NotificationToasts {}
     }
 
+    // transient confirmation toasts: `qs ipc call toast post <icon> <title> <body>`
+    // (shell scripts: ~/.config/hypr/scripts/toast)
+    Variants {
+        model: Quickshell.screens
+        ToastHost {}
+    }
+    IpcHandler {
+        target: "toast"
+        function post(icon: string, title: string, body: string): void { Toast.show(icon, title, body); }
+    }
+
     // `qs ipc call startmenu toggle` opens the app launcher on the focused monitor
     IpcHandler {
         target: "startmenu"

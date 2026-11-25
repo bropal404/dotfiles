@@ -34,7 +34,7 @@ PanelWindow {
 
     onVisibleChanged: {
         SysStats.active = visible;
-        if (visible) PowerMode.refresh();
+        if (visible) { PowerMode.refresh(); NightLight.refresh(); Caffeine.refresh(); }
         if (!visible) page = "main";
     }
 
@@ -155,8 +155,10 @@ PanelWindow {
                             active: panel.bar.btOn
                             expandable: true
                             onToggled: {
-                                if (Bluetooth.defaultAdapter)
+                                if (Bluetooth.defaultAdapter) {
                                     Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;
+                                    Toast.state("󰂯", "Bluetooth", Bluetooth.defaultAdapter.enabled);
+                                }
                             }
                             onExpand: panel.page = "bt"
                         }
@@ -195,8 +197,33 @@ PanelWindow {
                             sublabel: Notifs.dnd ? "On (Muted)" : (Notifs.count > 0 ? (Notifs.count + " unread") : "Off")
                             active: Notifs.dnd
                             expandable: true
-                            onToggled: Notifs.dnd = !Notifs.dnd
+                            onToggled: { Notifs.dnd = !Notifs.dnd; Toast.state(Notifs.dnd ? "󰂛" : "󰂚", "Do Not Disturb", Notifs.dnd); }
                             onExpand: panel.page = "notifs"
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Tile {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 187
+                            icon: NightLight.on ? "󰌵" : "󰖨"
+                            label: "Night Light"
+                            sublabel: NightLight.on ? "On · warm" : "Off"
+                            active: NightLight.on
+                            onToggled: NightLight.toggle()
+                        }
+
+                        Tile {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 187
+                            icon: Caffeine.on ? "󰅶" : "󰛊"
+                            label: "Caffeine"
+                            sublabel: Caffeine.on ? "Screen stays awake" : "Off"
+                            active: Caffeine.on
+                            onToggled: Caffeine.toggle()
                         }
                     }
 
@@ -347,6 +374,14 @@ PanelWindow {
                                     color: Theme.fgSurface
                                     Layout.fillWidth: true
                                 }
+                                IconButton {
+                                    icon: "󰎟"
+                                    iconSize: 15
+                                    implicitWidth: 28
+                                    implicitHeight: 28
+                                    tooltip: "Clear all"
+                                    onClicked: { Notifs.clearAll(); Toast.show("󰎟", "Notifications", "Cleared"); }
+                                }
                                 StyledText {
                                     text: "View all"
                                     font.pixelSize: 11
@@ -422,7 +457,7 @@ PanelWindow {
                                 visible: Notifs.count > 0
                                 icon: "󰆴"
                                 tooltip: "Clear all"
-                                onClicked: Notifs.clearAll()
+                                onClicked: { Notifs.clearAll(); Toast.show("󰎟", "Notifications", "Cleared"); }
                             }
                         }
 

@@ -286,6 +286,11 @@ local floatWs   = {}   -- workspace id -> true while float mode is on
 FloatWorkspaces = floatWs  -- (global, for debugging: hyprctl eval "FloatWorkspaces[20]=true")
 local floatedBy = {}   -- window address -> true if float mode (not you) floated it
 
+-- Transient confirmation toast via Quickshell (scripts/toast); falls back to a notification.
+local function toast(title, body, icon)
+    hl.exec_cmd(string.format("%s/.config/hypr/scripts/toast %q %q %q", os.getenv("HOME"), title, body or "", icon or ""))
+end
+
 local function wsOf(w)
     local ok, id = pcall(function() return w.workspace and w.workspace.id end)
     return ok and id or nil
@@ -344,13 +349,13 @@ function ToggleFloatWorkspace()
                 hl.dispatch(hl.dsp.window.float({ action = "disable", window = w }))
             end
         end
-        hl.exec_cmd("notify-send -a Arrakis 'Workspace " .. id .. "' 'Tiling'")
+        toast("Workspace " .. id, "Tiling", "󰕮")
     else
         floatWs[id] = true
         for _, w in ipairs(hl.get_windows({ workspace = id, floating = false })) do
             float_window(w)
         end
-        hl.exec_cmd("notify-send -a Arrakis 'Workspace " .. id .. "' 'Floating only'")
+        toast("Workspace " .. id, "Floating only", "󰖲")
     end
 end
 hl.bind(mainMod .. " + SPACE", ToggleFloatWorkspace)
@@ -523,13 +528,13 @@ local function toggle_pin_window()
     if not win then return end
     if win.pinned then
         hl.dispatch(hl.dsp.window.pin({ window = win }))
-        hl.exec_cmd("notify-send -a Arrakis 'Window Unpinned' 'Unpinned from workspaces'")
+        toast("Window", "Unpinned", "󰤱")
     else
         if not win.floating then
             hl.dispatch(hl.dsp.window.float({ action = "enable", window = win }))
         end
         hl.dispatch(hl.dsp.window.pin({ window = win }))
-        hl.exec_cmd("notify-send -a Arrakis 'Window Pinned' 'Pinned to all workspaces'")
+        toast("Window", "Pinned to all workspaces", "󰐃")
     end
 end
 hl.bind(mainMod .. " + Y", toggle_pin_window)
@@ -681,13 +686,13 @@ end)
 -- Toggles
 hb("O", function()
     hl.config({ animations = { enabled = false } })
-    hl.exec_cmd("notify-send -a Arrakis 'Animations off'")
+    toast("Animations", "Off", "󰑙")
 end)
 hb("P", function()
     hl.config({ animations = { enabled = true } })
-    hl.exec_cmd("notify-send -a Arrakis 'Animations on'")
+    toast("Animations", "On", "󰑙")
 end)
-hb("L", hl.dsp.exec_cmd("sh -c 'if pgrep -x hypridle >/dev/null; then pkill -x hypridle; notify-send -a Arrakis \"Auto-lock off\" \"Screen stays awake\"; else setsid hypridle >/dev/null 2>&1 & notify-send -a Arrakis \"Auto-lock on\"; fi'"))
+hb("L", hl.dsp.exec_cmd(scripts .. "/caffeine"))   -- caffeine: hypridle off = screen stays awake
 
 -- Windows & workspaces
 -- Hyper + number moves active window to that workspace (1-10)
@@ -749,7 +754,7 @@ end)
 hb("N", hl.dsp.exec_cmd(scripts .. "/nightlight"))
 
 -- Colour picker: HYPER+C -> click a pixel, hex goes to the clipboard
-hb("C", hl.dsp.exec_cmd("sh -c 'command -v hyprpicker >/dev/null || { notify-send -a Arrakis \"hyprpicker missing\" \"sudo pacman -S hyprpicker\"; exit; }; c=$(hyprpicker -a -f hex) && notify-send -a Arrakis \"Colour\" \"$c\"'"))
+hb("C", hl.dsp.exec_cmd("sh -c 'command -v hyprpicker >/dev/null || { " .. scripts .. "/toast \"hyprpicker missing\" \"sudo pacman -S hyprpicker\"; exit; }; c=$(hyprpicker -a -f hex) && " .. scripts .. "/toast Colour \"$c\" 󰏘'"))
 
 -- Find the cursor: HYPER+E pulses rings around it (Quickshell Locator.qml)
 hb("E", hl.dsp.exec_cmd("sh -c 'qs ipc call locator ping $(hyprctl cursorpos | tr -d \" \" | tr , \" \")'"))

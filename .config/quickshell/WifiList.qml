@@ -8,19 +8,24 @@ ColumnLayout {
     spacing: 4
     property string pwFor: ""
 
-    Component.onCompleted: Net.scan()
+    Component.onCompleted: if (Net.wifiEnabled) Net.scan()
+
+    // after switching Wi-Fi on, give the radio a moment, then list networks
+    Connections { target: Net; function onWifiEnabledChanged() { if (Net.wifiEnabled) rescan.restart(); } }
+    Timer { id: rescan; interval: 1500; onTriggered: Net.scan() }
 
     RowLayout {
         Layout.fillWidth: true
         Layout.leftMargin: 8
         StyledText {
             Layout.fillWidth: true
-            text: Net.scanning ? "Scanning…" : "Wi-Fi networks"
+            text: !Net.wifiEnabled ? "Wi-Fi" : Net.scanning ? "Scanning…" : "Wi-Fi networks"
             color: Theme.fgSurfaceVariant
             font.pixelSize: 12
             font.weight: Font.DemiBold
         }
-        IconButton { icon: "󰑐"; iconSize: 16; implicitWidth: 30; implicitHeight: 30; onClicked: Net.scan() }
+        IconButton { visible: Net.wifiEnabled; icon: "󰑐"; iconSize: 16; implicitWidth: 30; implicitHeight: 30; onClicked: Net.scan() }
+        Toggle { checked: Net.wifiEnabled; Layout.rightMargin: 4; onToggled: Net.setWifi(!Net.wifiEnabled) }
     }
 
     StyledText {

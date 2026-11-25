@@ -1,0 +1,8 @@
+#!/bin/sh
+# Show a transient toast (Quickshell), falling back to a normal notification.
+#   toast "Title" ["Body"] ["icon glyph"]
+title=$1 body=${2:-} icon=${3:-}
+[ -n "$title" ] || { echo "usage: toast TITLE [BODY] [ICON]" >&2; exit 1; }
+qs ipc call toast post "$icon" "$title" "$body" >/dev/null 2>&1 \
+    || notify-send -a Arrakis "$title" "$body" 2>/dev/null
+exit 0

@@ -1,8 +1,17 @@
 #!/bin/sh
-# Toggle night light. hyprsunset's own schedule (hyprsunset.conf) keeps running underneath.
+# Night light (hyprsunset); its own schedule (hyprsunset.conf) keeps running underneath.
+#   nightlight [toggle]   flip warm/neutral by hand, with a toast
+#   nightlight status     prints "on" or "off"
+T=$(dirname "$0")/toast
 cur=$(hyprctl hyprsunset temperature 2>/dev/null | tr -dc '0-9')
-if [ -n "$cur" ] && [ "$cur" -lt 6000 ]; then
-    hyprctl hyprsunset identity >/dev/null && notify-send -a Arrakis "Night light off"
-else
-    hyprctl hyprsunset temperature 3800 >/dev/null && notify-send -a Arrakis "Night light on" "3800K"
-fi
+on() { [ -n "$cur" ] && [ "$cur" -lt 6000 ]; }
+case "${1:-toggle}" in
+    status) on && echo on || echo off ;;
+    toggle)
+        if on; then
+            hyprctl hyprsunset identity >/dev/null && "$T" "Night light" "Off" "󰖨"
+        else
+            hyprctl hyprsunset temperature 3800 >/dev/null && "$T" "Night light" "On · 3800K" "󰌵"
+        fi ;;
+    *) echo "usage: nightlight [toggle|status]" >&2; exit 1 ;;
+esac

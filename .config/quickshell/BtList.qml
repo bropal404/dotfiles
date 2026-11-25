@@ -19,7 +19,7 @@ ColumnLayout {
         Layout.leftMargin: 8
         StyledText {
             Layout.fillWidth: true
-            text: root.adapter?.discovering ? "Searching for devices…" : "Bluetooth devices"
+            text: !(root.adapter?.enabled ?? false) ? "Bluetooth" : root.adapter?.discovering ? "Searching for devices…" : "Bluetooth devices"
             color: Theme.fgSurfaceVariant
             font.pixelSize: 12
             font.weight: Font.DemiBold
@@ -29,6 +29,15 @@ ColumnLayout {
             icon: root.adapter?.discovering ? "󰓛" : "󰑐"
             iconSize: 16; implicitWidth: 30; implicitHeight: 30
             onClicked: root.adapter.discovering = !root.adapter.discovering
+        }
+        Toggle {
+            visible: root.adapter !== null
+            checked: root.adapter?.enabled ?? false
+            Layout.rightMargin: 4
+            onToggled: {
+                root.adapter.enabled = !root.adapter.enabled;
+                Toast.state("󰂯", "Bluetooth", root.adapter.enabled);
+            }
         }
     }
 

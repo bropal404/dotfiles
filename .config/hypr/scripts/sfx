@@ -3,8 +3,8 @@
 # Mute all effects:          touch ~/.cache/dune-sfx-off   (or: sfx toggle)
 off="$HOME/.cache/dune-sfx-off"
 if [[ "$1" == toggle ]]; then
-    if [[ -e $off ]]; then rm -f "$off"; notify-send -a Arrakis "Sound effects on"
-    else touch "$off"; notify-send -a Arrakis "Sound effects muted"; fi
+    if [[ -e $off ]]; then rm -f "$off"; "$(dirname "$0")/toast" "Sound effects" "On" 󰕾
+    else touch "$off"; "$(dirname "$0")/toast" "Sound effects" "Muted" 󰖁; fi
     exit 0
 fi
 [[ -e $off ]] && exit 0
