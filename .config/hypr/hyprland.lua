@@ -252,6 +252,18 @@ hl.gesture({
     action    = "workspace"
 })
 
+-- 3-finger swipe up / down: roll the stack in master layout (same as HYPER+F / HYPER+SHIFT+F)
+hl.gesture({
+    fingers   = 3,
+    direction = "up",
+    action    = function() if CurLayout == "master" then hl.dispatch(hl.dsp.layout("rollnext")) end end,
+})
+hl.gesture({
+    fingers   = 3,
+    direction = "down",
+    action    = function() if CurLayout == "master" then hl.dispatch(hl.dsp.layout("rollprev")) end end,
+})
+
 -- 4-finger swipe up / down: send the current workspace to the monitor above / below
 hl.gesture({
     fingers   = 4,
