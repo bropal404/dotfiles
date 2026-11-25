@@ -14,7 +14,7 @@ Singleton {
     property string icon: ""
     property string title: ""
     property string body: ""
-    property string monitor: ""      // toast appears on the monitor that was focused when it fired
+    property string monitor: ""      // toast appears (bottom centre) on the monitor that was focused when it fired
     property int serial: 0           // bumps on every show, so the host can restart its timer
     property bool shown: false
 

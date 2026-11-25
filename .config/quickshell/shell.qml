@@ -83,13 +83,12 @@ ShellRoot {
     }
     IpcHandler {
         target: "osd"
-        function volume(): void { _show("volume", ""); }
-        function brightness(): void { Brightness.refresh(); _show("brightness", ""); }
-        function layout(name: string): void { _show("layout", name); }
-        function _show(kind: string, text: string): void {
+        function volume(): void { _show("volume"); }
+        function brightness(): void { Brightness.refresh(); _show("brightness"); }
+        function _show(kind: string): void {
             const mon = Hyprland.focusedMonitor?.name;
             for (const o of osds.instances)
-                if (o.screen.name === mon) o.show(kind, text);
+                if (o.screen.name === mon) o.show(kind);
         }
     }
 

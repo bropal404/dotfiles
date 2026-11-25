@@ -2,7 +2,7 @@ import Quickshell
 import Quickshell.Wayland
 import QtQuick
 
-// Renders Toast on the monitor that was focused when it fired. Click-through, no focus, ~2.2s.
+// Renders Toast on the monitor that was focused when it fired. Click-through, no focus, ~2.2s, bottom centre.
 PanelWindow {
     id: host
     required property var modelData
@@ -12,8 +12,8 @@ PanelWindow {
 
     visible: card.opacity > 0.01
     color: "transparent"
-    anchors { top: true }
-    margins { top: Theme.gap + 12 }
+    anchors { bottom: true }
+    margins { bottom: 72 }       // same spot as the volume / brightness OSD
     implicitWidth: Math.max(240, Math.min(460, row.implicitWidth + 44))
     implicitHeight: 56
     exclusionMode: ExclusionMode.Ignore
@@ -34,7 +34,7 @@ PanelWindow {
         border.width: 1
         border.color: Theme.alpha(Theme.outlineVariant, 0.8)
         opacity: Toast.shown && host.here ? 1 : 0
-        transform: Translate { y: Toast.shown && host.here ? 0 : -8; Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } } }
+        transform: Translate { y: Toast.shown && host.here ? 0 : 8; Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } } }
         Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
 
         Row {

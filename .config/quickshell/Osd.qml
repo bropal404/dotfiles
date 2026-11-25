@@ -17,17 +17,14 @@ PanelWindow {
 
     readonly property real vol: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
-    property string text: ""
-    readonly property bool isLayout: kind === "layout"
     readonly property real level: kind === "volume" ? (muted ? 0 : vol) : Brightness.value
-    readonly property string glyph: isLayout ? "󰕮" : kind === "volume"
+    readonly property string glyph: kind === "volume"
         ? (muted ? "󰝟" : vol < 0.34 ? "󰕿" : vol < 0.67 ? "󰖀" : "󰕾")
         : (Brightness.value > 0.6 ? "󰃠" : Brightness.value > 0.25 ? "󰃟" : "󰃞")
-    readonly property string label: isLayout ? "LAYOUT" : kind === "volume" ? (muted ? "MUTED" : "VOLUME") : "BRIGHTNESS"
+    readonly property string label: kind === "volume" ? (muted ? "MUTED" : "VOLUME") : "BRIGHTNESS"
 
-    function show(k, t) {
+    function show(k) {
         kind = k;
-        text = t || "";
         shown = true;
         hideTimer.restart();
     }
@@ -77,14 +74,7 @@ PanelWindow {
                 font.pixelSize: 10
                 color: Theme.fgSurfaceVariant
             }
-            StyledText {
-                visible: osd.isLayout
-                text: osd.text.toUpperCase()
-                font.pixelSize: 15
-                font.weight: Font.Light
-            }
             Rectangle {
-                visible: !osd.isLayout
                 width: parent.width; height: 3; radius: 1.5
                 color: Theme.alpha(Theme.fgSurface, 0.14)
                 Rectangle {
@@ -98,7 +88,6 @@ PanelWindow {
 
         StyledText {
             id: pct
-            visible: !osd.isLayout
             anchors { right: parent.right; rightMargin: 18; verticalCenter: parent.verticalCenter }
             width: 40
             horizontalAlignment: Text.AlignRight

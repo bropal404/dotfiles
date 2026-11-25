@@ -456,6 +456,7 @@ hl.layer_rule({ name = "qs-bar-blur",            match = { namespace = "^qs-bar$
 hl.layer_rule({ name = "qs-launcher-blur",       match = { namespace = "^qs-launcher$" },       blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-control-center-blur", match = { namespace = "^qs-control-center$" }, blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-osd-blur",            match = { namespace = "^qs-osd$" },            blur = true, ignore_alpha = 0 })
+hl.layer_rule({ name = "qs-toast-blur",            match = { namespace = "^qs-toast$" },            blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-notifications-blur",  match = { namespace = "^qs-notifications$" },  blur = true, ignore_alpha = 0 })
 
 -- App Finder & Power Dialog blur
@@ -562,7 +563,7 @@ CurLayout = "master"
 function SetLayout(name)
     CurLayout = name
     hl.config({ general = { layout = name } })
-    hl.exec_cmd("qs ipc call osd layout " .. name)
+    toast("Layout", name:sub(1, 1):upper() .. name:sub(2), "󰕮")
 end
 hl.bind(mainMod .. " + CTRL + D",         function() SetLayout("dwindle") end)
 hl.bind(mainMod .. " + CTRL + SHIFT + D", function() SetLayout("master") end)
