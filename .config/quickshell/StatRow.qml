@@ -11,7 +11,7 @@ ColumnLayout {
     property color accent: value > 0.85 ? Theme.error : Theme.primary
     implicitWidth: 340
     Layout.fillWidth: true
-    spacing: 6
+    spacing: 3
 
     RowLayout {
         Layout.fillWidth: true
@@ -22,13 +22,13 @@ ColumnLayout {
     }
     Rectangle {
         Layout.fillWidth: true
-        implicitHeight: 6
-        radius: 3
+        implicitHeight: 4
+        radius: 2
         color: Theme.surfaceContainerHighest
         clip: true
         Rectangle {
             height: parent.height
-            radius: 3
+            radius: 2
             width: Math.max(height, parent.width * Math.max(0, Math.min(1, r.value)))
             color: r.accent
             Behavior on width { NumberAnimation { duration: Theme.durLong; easing.type: Easing.OutCubic } }

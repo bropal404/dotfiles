@@ -105,8 +105,8 @@ end)
 
 hl.config({
     general = {
-        gaps_in  = 4,
-        gaps_out = 12,
+        gaps_in  = 3,
+        gaps_out = 6,
 
         border_size = 1,
 
@@ -291,16 +291,45 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 
--- Floating-only workspace (SUPER+SPACE): toggles the *current workspace* between normal tiling
--- and "everything floats". Existing windows are floated, new windows opening there float too;
--- toggling off tiles back only the windows this mode floated.
+-- Floating-only workspace (SUPER+SPACE): turns the *current workspace* into a classic stacking
+-- desktop. Windows float, are resized and cascaded evenly from the top left to the bottom right, new
+-- windows join the cascade, and a Quickshell icon dock (FloatDock.qml) appears on the left.
+-- Toggling off tiles back only the windows this mode floated.
 local floatWs   = {}   -- workspace id -> true while float mode is on
 FloatWorkspaces = floatWs  -- (global, for debugging: hyprctl eval "FloatWorkspaces[20]=true")
 local floatedBy = {}   -- window address -> true if float mode (not you) floated it
 
+local DOCK_SPACE = 72  -- px kept free on the left for the dock
+local EDGE       = 6   -- gap to the other screen edges (= gaps_out)
+
 -- Transient confirmation toast via Quickshell (scripts/toast); falls back to a notification.
 local function toast(title, body, icon)
     hl.exec_cmd(string.format("%s/.config/hypr/scripts/toast %q %q %q", os.getenv("HOME"), title, body or "", icon or ""))
+end
+
+-- State file: read by the dock, and re-read here so float mode survives a config reload.
+local floatState = (os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/hypr/"
+    .. (os.getenv("HYPRLAND_INSTANCE_SIGNATURE") or "default") .. "/floatws"
+
+local function save_float_state()
+    local f = io.open(floatState, "w")
+    if not f then return end
+    for id in pairs(floatWs) do f:write("ws ", tostring(id), "\n") end
+    for addr in pairs(floatedBy) do f:write("win ", addr, "\n") end
+    f:close()
+end
+
+do
+    local f = io.open(floatState, "r")
+    if f then
+        for line in f:lines() do
+            local kind, v = line:match("^(%a+) (%S+)$")
+            if kind == "ws" and tonumber(v) then floatWs[math.tointeger(tonumber(v))] = true
+            elseif kind == "win" then floatedBy[v] = true end
+        end
+        f:close()
+    end
+    save_float_state()
 end
 
 local function wsOf(w)
@@ -315,38 +344,59 @@ local function float_window(w)
     hl.dispatch(hl.dsp.window.float({ action = "enable", window = w }))
 end
 
--- New windows in float mode: fixed size, centred, cascading down-right so they never hide each other.
--- (Without this a freshly floated window keeps whatever its tiling slot was: odd sizes and positions.)
-local function place_new(w)
-    local ok = pcall(function()
-        local mon = w.monitor
-        local id  = wsOf(w)
-        local mw, mh = mon.width / mon.scale, mon.height / mon.scale
-        local pw, ph = math.max(640, math.floor(mw * 0.60)), math.max(420, math.floor(mh * 0.72))
+-- Usable rectangle of a monitor (logical px) and the cascade window size inside it.
+local function cascade_area(mon)
+    local r = mon.reserved
+    local x = mon.x + r.left + DOCK_SPACE
+    local y = mon.y + r.top + EDGE
+    local aw = math.floor(mon.width / mon.scale) - r.left - r.right - DOCK_SPACE - EDGE
+    local ah = math.floor(mon.height / mon.scale) - r.top - r.bottom - 2 * EDGE
+    return x, y, aw, ah, math.floor(aw * 0.60), math.floor(ah * 0.68)
+end
 
-        local others = 0
-        for _, o in ipairs(hl.get_windows({ workspace = id, floating = true })) do
-            if o.address ~= w.address then others = others + 1 end
-        end
-        local off = (others % 7) * 34
-
+-- Put window at fraction t (0 = top left, 1 = bottom right) of the cascade and raise it.
+local function cascade_one(w, t)
+    pcall(function()
+        local x, y, aw, ah, pw, ph = cascade_area(w.monitor)
         hl.dispatch(hl.dsp.window.resize({ x = pw, y = ph, window = w }))
-        hl.dispatch(hl.dsp.window.center({ window = w }))
-        local at = w.at
-        local x, y = at.x or at[1], at.y or at[2]
-        hl.dispatch(hl.dsp.window.move({ x = x - 3 * 34 + off, y = y - 3 * 34 + off, window = w }))
+        hl.dispatch(hl.dsp.window.move({ x = x + math.floor((aw - pw) * t), y = y + math.floor((ah - ph) * t), window = w }))
+        hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top", window = w }))
     end)
-    return ok
+end
+
+-- Cascade every window on a workspace, one after another so you can watch them fan out.
+-- Least recently used goes top left; the focused window ends up bottom right, on top.
+local function cascade(id)
+    local wins = {}
+    for _, w in ipairs(hl.get_windows({ workspace = id, floating = true })) do
+        if not w.hidden then wins[#wins + 1] = w end
+    end
+    table.sort(wins, function(a, b) return a.focus_history_id > b.focus_history_id end)
+    for i, w in ipairs(wins) do
+        local t = #wins > 1 and (i - 1) / (#wins - 1) or 0.5
+        hl.timer(function() if floatWs[id] then cascade_one(w, t) end end, { timeout = 1 + (i - 1) * 70, type = "oneshot" })
+    end
 end
 
 local function on_window_arrived(w)
     if not (w and floatWs[wsOf(w)]) then return end
     float_window(w)
-    -- let the app/layout settle first, then place
-    hl.timer(function() place_new(w) end, { timeout = 80, type = "oneshot" })
+    save_float_state()
+    -- let the app settle, then give it the next step of the diagonal (existing windows stay put)
+    hl.timer(function()
+        local n = #hl.get_windows({ workspace = wsOf(w), floating = true })
+        cascade_one(w, ((n - 1) % 6) / 5)
+    end, { timeout = 80, type = "oneshot" })
 end
 hl.on("window.open", on_window_arrived)
 hl.on("window.move_to_workspace", on_window_arrived)
+
+-- Used by the dock: focus a window and bring it to the front.
+function FloatFocus(address)
+    local target = "address:" .. address
+    hl.dispatch(hl.dsp.focus({ window = target }))
+    hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top", window = target }))
+end
 
 function ToggleFloatWorkspace()
     local ws = hl.get_active_workspace()
@@ -367,8 +417,10 @@ function ToggleFloatWorkspace()
         for _, w in ipairs(hl.get_windows({ workspace = id, floating = false })) do
             float_window(w)
         end
+        hl.timer(function() cascade(id) end, { timeout = 80, type = "oneshot" })
         toast("Workspace " .. id, "Floating only", "󰖲")
     end
+    save_float_state()
 end
 hl.bind(mainMod .. " + SPACE", ToggleFloatWorkspace)
 
@@ -469,6 +521,7 @@ hl.layer_rule({ name = "qs-launcher-blur",       match = { namespace = "^qs-laun
 hl.layer_rule({ name = "qs-control-center-blur", match = { namespace = "^qs-control-center$" }, blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-osd-blur",            match = { namespace = "^qs-osd$" },            blur = true, ignore_alpha = 0 })
 hl.layer_rule({ name = "qs-toast-blur",            match = { namespace = "^qs-toast$" },            blur = true, ignore_alpha = 0 })
+hl.layer_rule({ name = "qs-dock-blur",             match = { namespace = "^qs-dock$" },             blur = true, ignore_alpha = 0, no_anim = true })
 hl.layer_rule({ name = "qs-notifications-blur",  match = { namespace = "^qs-notifications$" },  blur = true, ignore_alpha = 0 })
 
 -- App Finder & Power Dialog blur

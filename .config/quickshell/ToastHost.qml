@@ -13,7 +13,7 @@ PanelWindow {
     visible: card.opacity > 0.01
     color: "transparent"
     anchors { bottom: true }
-    margins { bottom: 72 }       // same spot as the volume / brightness OSD
+    margins { bottom: 56 }       // same spot as the volume / brightness OSD
     implicitWidth: Math.max(240, Math.min(460, row.implicitWidth + 44))
     implicitHeight: 56
     exclusionMode: ExclusionMode.Ignore
@@ -30,7 +30,7 @@ PanelWindow {
         id: card
         anchors.fill: parent
         radius: Theme.radiusXL
-        color: Theme.alpha(Theme.surfaceContainerHigh, 0.9)
+        color: Theme.alpha(Theme.surfaceContainerHigh, 0.72)
         border.width: 1
         border.color: Theme.alpha(Theme.outlineVariant, 0.8)
         opacity: Toast.shown && host.here ? 1 : 0

@@ -16,9 +16,8 @@ PanelWindow {
     screen: modelData
 
     anchors { left: true; right: true; bottom: true }
-    margins { left: Theme.gap + 4; right: Theme.gap + 4; bottom: Theme.gap }
     implicitHeight: Theme.barHeight
-    exclusiveZone: Theme.barHeight + Theme.gap
+    exclusiveZone: Theme.barHeight
     color: "transparent"
     WlrLayershell.namespace: "qs-bar"
 
@@ -62,12 +61,11 @@ PanelWindow {
     Rectangle {
         id: surface
         anchors.fill: parent
-        radius: Theme.radiusS
         gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: Theme.alpha(Theme.sky, 0.80) }
-            GradientStop { position: 0.5; color: Theme.alpha(Theme.surfaceContainer, 0.74) }
-            GradientStop { position: 1.0; color: Theme.alpha(Theme.sky, 0.80) }
+            GradientStop { position: 0.0; color: Theme.alpha(Theme.sky, 0.66) }
+            GradientStop { position: 0.5; color: Theme.alpha(Theme.surfaceContainer, 0.60) }
+            GradientStop { position: 1.0; color: Theme.alpha(Theme.sky, 0.66) }
         }
 
         // sand hairline along the top edge, brightest at the centre (over the clock)

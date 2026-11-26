@@ -14,7 +14,7 @@ Card {
         : players.find(p => p.isPlaying && idx === 0) ?? players[Math.min(idx, players.length - 1)]
 
     visible: player !== null
-    implicitHeight: 132
+    implicitHeight: 120
     clip: true
     color: Theme.surfaceContainerHigh
 
@@ -38,12 +38,12 @@ Card {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 14
+        anchors.margins: 10
         spacing: 14
 
         Rectangle {
-            Layout.preferredWidth: 104
-            Layout.preferredHeight: 104
+            Layout.preferredWidth: 100
+            Layout.preferredHeight: 100
             radius: Theme.radiusM
             color: Theme.secondaryContainer
             clip: true

@@ -16,7 +16,7 @@ Rectangle {
     readonly property color fg: active ? Theme.fgPrimary : Theme.fgSurface
     readonly property color fgVariant: active ? Theme.alpha(Theme.fgPrimary, 0.8) : Theme.fgSurfaceVariant
 
-    implicitHeight: 64
+    implicitHeight: 56
     implicitWidth: 176
     radius: active ? Theme.radiusL : Theme.radiusXL
     color: active ? Theme.primary : Theme.surfaceContainerHighest

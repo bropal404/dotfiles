@@ -77,8 +77,14 @@ case "$1" in
     watch)
         sleep 4                       # let Hyprland + Quickshell finish starting
         sync force >/dev/null
+        last=$(online)
         udevadm monitor --udev --subsystem-match=power_supply 2>/dev/null | while read -r _; do
-            sync >/dev/null && [ "$(override)" = auto ] && "$(dirname "$0")/toast" "Power" "$(cat "$APPLIED")" 󰂄
+            sync >/dev/null
+            cur=$(online)             # battery level events also land here; toast only on plug / unplug
+            [ "$cur" = "$last" ] && continue
+            last=$cur
+            if [ "$cur" = 1 ]; then "$(dirname "$0")/toast" "Power" "Plugged in" 󰂄
+            else "$(dirname "$0")/toast" "Power" "On battery" 󰁹; fi
         done ;;
     *) sync force ;;
 esac

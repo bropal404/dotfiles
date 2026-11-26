@@ -14,9 +14,13 @@ PanelWindow {
     visible: false
     color: "transparent"
     anchors { right: true; bottom: true }
-    margins { right: Theme.gap + 2; bottom: Theme.barHeight + Theme.gap * 2 }
+    margins { right: Theme.gap; bottom: Theme.gap }   // the bar's exclusive zone is already accounted for
     implicitWidth: 420
-    implicitHeight: Math.min(680, (screen?.height ?? 1080) - Theme.barHeight - Theme.gap * 4)
+    // as tall as the main page needs, up to the space above the bar; subpages keep that height
+    readonly property real maxHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.gap * 2
+    property real mainHeight: 680
+    implicitHeight: Math.min(mainHeight, maxHeight)
+    function fit() { if (visible && page === "main") mainHeight = header.implicitHeight + mainCol.implicitHeight + body.spacing + body.anchors.margins * 2; }
     exclusiveZone: 0
 
     WlrLayershell.namespace: "qs-control-center"
@@ -36,6 +40,7 @@ PanelWindow {
         SysStats.active = visible;
         if (visible) { PowerMode.refresh(); NightLight.refresh(); Caffeine.refresh(); }
         if (!visible) page = "main";
+        Qt.callLater(panel.fit);
     }
 
     Rectangle {
@@ -44,18 +49,20 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: panel.visible = false
         radius: Theme.radiusXL
-        color: Theme.alpha(Theme.surfaceContainer, 0.94)
+        color: Theme.alpha(Theme.surfaceContainer, 0.80)
         border.width: 1
         border.color: Theme.alpha(Theme.outlineVariant, 0.5)
         clip: true
 
         ColumnLayout {
+            id: body
             anchors.fill: parent
-            anchors.margins: 18
-            spacing: 14
+            anchors.margins: 14
+            spacing: 10
 
             // ── Header Bar ──
             RowLayout {
+                id: header
                 Layout.fillWidth: true
                 spacing: 10
 
@@ -125,7 +132,8 @@ PanelWindow {
                 ColumnLayout {
                     id: mainCol
                     width: parent.width
-                    spacing: 14
+                    spacing: 10
+                    onImplicitHeightChanged: Qt.callLater(panel.fit)
 
                     // ── 2x2 Quick Setting Tiles ──
                     RowLayout {
@@ -313,7 +321,7 @@ PanelWindow {
                     // ── System Resource Telemetry ──
                     Rectangle {
                         Layout.fillWidth: true
-                        implicitHeight: statsCol.implicitHeight + 24
+                        implicitHeight: statsCol.implicitHeight + 20
                         radius: Theme.radiusL
                         color: Theme.surfaceContainerHigh
                         border.width: 1
@@ -321,8 +329,8 @@ PanelWindow {
 
                         ColumnLayout {
                             id: statsCol
-                            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
-                            spacing: 12
+                            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
+                            spacing: 6
 
                             StatRow {
                                 Layout.fillWidth: true
@@ -354,7 +362,7 @@ PanelWindow {
                     Rectangle {
                         visible: Notifs.count > 0
                         Layout.fillWidth: true
-                        implicitHeight: notifPrevCol.implicitHeight + 24
+                        implicitHeight: notifPrevCol.implicitHeight + 20
                         radius: Theme.radiusL
                         color: Theme.surfaceContainerHigh
                         border.width: 1
@@ -362,8 +370,8 @@ PanelWindow {
 
                         ColumnLayout {
                             id: notifPrevCol
-                            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 14 }
-                            spacing: 10
+                            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
+                            spacing: 6
 
                             RowLayout {
                                 Layout.fillWidth: true
@@ -396,7 +404,7 @@ PanelWindow {
                             }
 
                             Repeater {
-                                model: Notifs.list.slice(0, 2)
+                                model: Notifs.list.slice(0, panel.maxHeight < 960 ? 1 : 2)   // short screens: one
                                 delegate: NotificationItem {
                                     required property var modelData
                                     notif: modelData

@@ -33,7 +33,7 @@ PanelWindow {
     visible: card.opacity > 0.01
     color: "transparent"
     anchors { bottom: true }
-    margins { bottom: 72 }
+    margins { bottom: 56 }
     implicitWidth: 320
     implicitHeight: 64
     exclusionMode: ExclusionMode.Ignore

@@ -16,7 +16,7 @@ Rectangle {
 
     implicitHeight: content.implicitHeight + 24
     radius: Theme.radiusL
-    color: critical ? Theme.errorContainer : popup ? Theme.surfaceContainerHigh : Theme.surfaceContainerHighest
+    color: popup ? Theme.alpha(critical ? Theme.errorContainer : Theme.surfaceContainerHigh, 0.76) : critical ? Theme.errorContainer : Theme.surfaceContainerHighest
     border.width: popup ? 1 : 0
     border.color: Theme.alpha(Theme.outlineVariant, 0.6)
 

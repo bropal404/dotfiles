@@ -11,7 +11,7 @@ Item {
     signal moved(real v)
     signal iconClicked()
 
-    implicitHeight: 48
+    implicitHeight: 40
     implicitWidth: 360
     Layout.fillWidth: true
 

@@ -92,6 +92,12 @@ ShellRoot {
         }
     }
 
+    // window dock for floating-only workspaces (SUPER+SPACE)
+    Variants {
+        model: Quickshell.screens
+        FloatDock {}
+    }
+
     Variants {
         id: toasts
         model: Quickshell.screens

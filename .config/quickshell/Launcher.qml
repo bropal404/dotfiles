@@ -13,7 +13,7 @@ PanelWindow {
     visible: false
     color: "transparent"
     anchors { left: true; bottom: true }
-    margins { left: Theme.gap + 2; bottom: Theme.barHeight + Theme.gap * 2 }
+    margins { left: Theme.gap; bottom: Theme.gap }   // the bar's exclusive zone is already accounted for
     implicitWidth: 380
     implicitHeight: 540
     exclusiveZone: 0
