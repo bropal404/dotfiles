@@ -264,6 +264,13 @@ hl.gesture({
     action    = function() if CurLayout == "master" then hl.dispatch(hl.dsp.layout("rollprev")) end end,
 })
 
+-- 3-finger pinch: toggle fullscreen on the focused window (same as SUPER+F)
+hl.gesture({
+    fingers   = 3,
+    direction = "pinch",
+    action    = "fullscreen",
+})
+
 -- 4-finger swipe up / down: send the current workspace to the monitor above / below
 hl.gesture({
     fingers   = 4,
@@ -301,6 +308,7 @@ local floatedBy = {}   -- window address -> true if float mode (not you) floated
 
 local DOCK_SPACE = 72  -- px kept free on the left for the dock
 local EDGE       = 6   -- gap to the other screen edges (= gaps_out)
+local CASCADE_W, CASCADE_H = 1200, 700 -- cascaded window size (logical px, shrunk if the screen is smaller)
 
 -- Transient confirmation toast via Quickshell (scripts/toast); falls back to a notification.
 local function toast(title, body, icon)
@@ -351,7 +359,7 @@ local function cascade_area(mon)
     local y = mon.y + r.top + EDGE
     local aw = math.floor(mon.width / mon.scale) - r.left - r.right - DOCK_SPACE - EDGE
     local ah = math.floor(mon.height / mon.scale) - r.top - r.bottom - 2 * EDGE
-    return x, y, aw, ah, math.floor(aw * 0.60), math.floor(ah * 0.68)
+    return x, y, aw, ah, math.min(CASCADE_W, aw), math.min(CASCADE_H, ah)
 end
 
 -- Put window at fraction t (0 = top left, 1 = bottom right) of the cascade and raise it.

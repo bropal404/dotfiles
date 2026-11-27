@@ -197,6 +197,7 @@ Workspaces 1–10 are dynamic (not tied to a monitor or app).
 | `Super+Alt+S` | swap workspaces between the two monitors |
 | 3-finger swipe left / right | switch workspace |
 | 3-finger swipe up / down | roll the stack (master layout only) |
+| 3-finger pinch | toggle fullscreen |
 | 4-finger swipe up / down | send workspace to monitor above / below |
 
 ### Media & brightness
