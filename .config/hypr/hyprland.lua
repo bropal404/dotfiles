@@ -256,12 +256,12 @@ hl.gesture({
 hl.gesture({
     fingers   = 3,
     direction = "up",
-    action    = function() if CurLayout == "master" then hl.dispatch(hl.dsp.layout("rollnext")) end end,
+    action    = function() if LayoutOf() == "master" then hl.dispatch(hl.dsp.layout("rollnext")) end end,
 })
 hl.gesture({
     fingers   = 3,
     direction = "down",
-    action    = function() if CurLayout == "master" then hl.dispatch(hl.dsp.layout("rollprev")) end end,
+    action    = function() if LayoutOf() == "master" then hl.dispatch(hl.dsp.layout("rollprev")) end end,
 })
 
 -- 3-finger pinch: toggle fullscreen on the focused window (same as SUPER+F)
@@ -626,17 +626,91 @@ hl.bind(mainMod .. " + SHIFT + V", float_preset(900, 500))
 hl.bind(mainMod .. " + SHIFT + B", float_preset(1200, 700))
 hl.bind(mainMod .. " + SHIFT + N", float_preset(1600, 900))
 
+-- SUPER+= / SUPER+- : grow / shrink the focused floating window around its centre, keeping its shape
+function ScaleWindow(factor, w)   -- w defaults to the focused window
+    w = w or hl.get_active_window()
+    if not w then return end
+    if not w.floating then toast("Scale window", "Float it first (Super+V)", "󰖲") return end
+    local function xy(v) return v.x or v[1], v.y or v[2] end
+    local x, y = xy(w.at)
+    local cw, ch = xy(w.size)
+    local mon, r = w.monitor, w.monitor.reserved
+    local mx, my = mon.x + r.left, mon.y + r.top
+    local mw = math.floor(mon.width / mon.scale) - r.left - r.right
+    local mh = math.floor(mon.height / mon.scale) - r.top - r.bottom
+    -- limit the factor (not each side) so the aspect ratio survives
+    local f = factor > 1 and math.max(1, math.min(factor, mw / cw, mh / ch))
+                          or math.min(1, math.max(factor, 320 / cw, 200 / ch))
+    local nw, nh = math.floor(cw * f + 0.5), math.floor(ch * f + 0.5)
+    -- same centre, nudged back inside the screen if it would stick out
+    local nx = math.max(mx, math.min(math.floor(x + (cw - nw) / 2), mx + mw - nw))
+    local ny = math.max(my, math.min(math.floor(y + (ch - nh) / 2), my + mh - nh))
+    hl.dispatch(hl.dsp.window.resize({ x = nw, y = nh, window = w }))
+    hl.dispatch(hl.dsp.window.move({ x = nx, y = ny, window = w }))
+end
+hl.bind(mainMod .. " + equal", function() ScaleWindow(1.1) end,     { repeating = true })
+hl.bind(mainMod .. " + minus", function() ScaleWindow(1 / 1.1) end, { repeating = true })
+
 -- Gaps: SUPER+G = no gaps, SUPER+SHIFT+G = compact gaps, SUPER+CTRL+G = default
 hl.bind(mainMod .. " + G",               function() hl.config({ general = { gaps_in = 0, gaps_out = 0 } }) end)
 hl.bind(mainMod .. " + SHIFT + G",       function() hl.config({ general = { gaps_in = 3, gaps_out = 5 } }) end)
 hl.bind(mainMod .. " + CTRL + G",        function() hl.config({ general = { gaps_in = 5, gaps_out = 10 } }) end)
 
+-- ALT+TAB / ALT+SHIFT+TAB: switch windows on the current workspace, most recently used first.
+-- The order is frozen while ALT is held, so one tap flips to the previous window and
+-- further taps walk further back; releasing ALT commits.
+local altList, altIndex = nil, 1
+
+function AltTab(step)
+    local ws = hl.get_active_workspace()
+    if not ws then return end
+    if not altList or altList.ws ~= ws.id then
+        local wins = {}
+        for _, w in ipairs(hl.get_windows({ workspace = ws.id })) do
+            if w.mapped and not w.hidden then wins[#wins + 1] = w end
+        end
+        table.sort(wins, function(a, b) return a.focus_history_id < b.focus_history_id end)
+        altList, altIndex = { ws = ws.id }, 1
+        for i, w in ipairs(wins) do altList[i] = w.address end
+    end
+    if #altList < 2 then return end
+    altIndex = (altIndex - 1 + step) % #altList + 1
+    FloatFocus(altList[altIndex])   -- focus and raise (works tiled or floating)
+end
+hl.bind("ALT + TAB",         function() AltTab(1) end,  { repeating = true })
+hl.bind("ALT + SHIFT + TAB", function() AltTab(-1) end, { repeating = true })
+hl.bind("ALT + Alt_L", function() altList = nil end, { release = true, ignore_mods = true, non_consuming = true, transparent = true })
+
 -- Layout switching + master-layout controls
-CurLayout = "master"
-function SetLayout(name)
-    CurLayout = name
-    hl.config({ general = { layout = name } })
-    toast("Layout", name:sub(1, 1):upper() .. name:sub(2), "󰕮")
+-- Layouts are per workspace: switching affects only the current one (everything else stays master),
+-- and a workspace goes back to master once its last window is gone.
+local wsLayout = {}   -- workspace id -> { layout, selector }, only for non-master workspaces
+
+function LayoutOf()   -- layout of the active workspace
+    local ws = hl.get_active_workspace()
+    return ws and wsLayout[ws.id] and wsLayout[ws.id].layout or "master"
+end
+
+local function apply_layout(id, selector, name)
+    wsLayout[id] = name ~= "master" and { layout = name, selector = selector } or nil
+    hl.workspace_rule({ workspace = selector, layout = name })
+end
+
+function SetLayout(name, ws)   -- ws defaults to the active workspace
+    ws = ws or hl.get_active_workspace()
+    if not ws then return end
+    apply_layout(ws.id, ws.id > 0 and tostring(ws.id) or ws.name, name)
+    toast("Workspace " .. ws.id, name:sub(1, 1):upper() .. name:sub(2), "󰕮")
+end
+
+local function reset_empty_layouts()
+    for id, l in pairs(wsLayout) do
+        if #hl.get_windows({ workspace = id }) == 0 then apply_layout(id, l.selector, "master") end
+    end
+end
+-- checked a moment later, once the window has actually left the workspace
+for _, event in ipairs({ "window.close", "window.destroy", "window.move_to_workspace" }) do
+    hl.on(event, function() hl.timer(reset_empty_layouts, { timeout = 150, type = "oneshot" }) end)
 end
 hl.bind(mainMod .. " + CTRL + D",         function() SetLayout("dwindle") end)
 hl.bind(mainMod .. " + CTRL + SHIFT + D", function() SetLayout("master") end)
@@ -803,7 +877,7 @@ hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sand
 -- Workspaces 1-4 live on the external monitor (above), 5-8 on the laptop (below).
 -- If the external is unplugged they simply fall back to the laptop.
 -- (Default per-workspace monitor/layout rules and app->workspace pinning removed 2026-11-24:
---  workspaces are now plain/dynamic; the layout is global and switched with the binds below.)
+--  workspaces are now plain/dynamic; layouts are per workspace, see SetLayout.)
 
 -- Pin apps to named homes (silent: never yanks you away from what you're doing)
 
@@ -811,7 +885,7 @@ hl.layer_rule({ name = "qs-intro-noanim", match = { namespace = "^qs-(intro|sand
 hl.bind(mainMod .. " + CTRL + S", function() SetLayout("scrolling") end)
 hl.bind(hyper .. " + TAB", function()   -- cycle master -> dwindle -> scrolling
     local nxt = { master = "dwindle", dwindle = "scrolling", scrolling = "master" }
-    SetLayout(nxt[CurLayout] or "master")
+    SetLayout(nxt[LayoutOf()])
 end)
 -- Scrolling controls (HYPER+...): resize column, fit, swap columns
 hb("equal", hl.dsp.layout("colresize +0.1"), { repeating = true })

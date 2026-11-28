@@ -10,6 +10,7 @@ Rectangle {
     required property var notif
     property bool popup: false
     signal closed()
+    signal activated()      // clicked through to the app
 
     readonly property bool critical: notif?.urgency === NotificationUrgency.Critical
     readonly property date received: Notifs.times[notif?.id] ?? new Date()
@@ -32,8 +33,8 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         onClicked: m => {
             if (m.button === Qt.MiddleButton) { root.notif.dismiss(); return; }
-            const def = root.notif.actions.find(a => a.identifier === "default");
-            if (def) def.invoke();
+            root.activated();
+            Notifs.activate(root.notif);
             root.closed();
         }
     }

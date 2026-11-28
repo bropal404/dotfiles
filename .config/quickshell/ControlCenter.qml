@@ -408,6 +408,7 @@ PanelWindow {
                                 delegate: NotificationItem {
                                     required property var modelData
                                     notif: modelData
+                                    onActivated: panel.visible = false
                                     Layout.fillWidth: true
                                 }
                             }
@@ -483,6 +484,7 @@ PanelWindow {
                             delegate: NotificationItem {
                                 required property var modelData
                                 notif: modelData
+                                onActivated: panel.visible = false
                                 Layout.fillWidth: true
                             }
                         }

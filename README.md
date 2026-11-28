@@ -23,6 +23,7 @@ and procedurally synthesised sound effects.
   small transient toast. From a script: `scripts/toast "Title" "Body" "icon"`; from QML: `Toast.show(…)`.
 - **Quick settings** that fit on one screen: switch Wi-Fi / Bluetooth off from their own lists, night light
   and caffeine tiles, clear all notifications in one click.
+- **Familiar window handling**: `Alt+Tab`, one-key window scaling, and clicking a notification jumps to its app.
 - **Touchpad gestures**: swipe between workspaces, roll the master stack, throw workspaces between monitors.
 - **Docked glass bar**, tight gaps and slightly transparent surfaces.
 
@@ -39,7 +40,7 @@ and procedurally synthesised sound effects.
 ## What's in it
 - **Hyprland** (`.config/hypr/hyprland.lua`) : rotating flare border, near-square corners, long warm
   shadows, gritty sand-haze blur, and slow "sandSettle / haze / wind" animation curves.
-  Three layouts : **master**, **dwindle**, **scrolling** : cycled with `Hyper+Tab`, with a toast on switch.
+  Three layouts : **master**, **dwindle**, **scrolling** : set per workspace, cycled with `Hyper+Tab`.
   A **Hyper key** layer on Caps Lock; floating-only workspaces; scratchpad; 3 / 4 finger gestures.
 - **Quickshell UI** (`.config/quickshell`) : docked bar, launcher that learns your frequent apps, control center
   (Wi-Fi, Bluetooth, VPN, do not disturb, night light, caffeine, power mode, volume/brightness, media,
@@ -119,6 +120,8 @@ Source of truth: `.config/hypr/hyprland.lua` (search for `hl.bind` / `hb(`).
 |---|---|
 | `Super+Q` | close window |
 | `Super+V` | toggle floating |
+| `Alt+Tab` / `Alt+Shift+Tab` | switch windows on this workspace, most recently used first |
+| `Super+=` / `Super+-` | grow / shrink the floating window around its centre |
 | `Super+F` | fullscreen |
 | `Super+P` | pseudo-tile |
 | `Super+J` | toggle split (dwindle) |
@@ -140,7 +143,8 @@ cascade. In the left dock, click an icon to focus and raise that window, scroll 
 Toggling off tiles back the windows the mode floated.
 
 ### Layouts
-Layout is global. Switching shows a toast.
+Layouts are per workspace: switching affects only the current one. Every workspace starts as master and
+goes back to it when its last window is closed (or on a config reload). Switching shows a toast.
 
 | keys | action |
 |---|---|
